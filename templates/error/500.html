@@ -1,0 +1,15 @@
+{% extends 'login.html' %}
+
+{% block title %}500 Server Error{% endblock %}
+
+{% block body %}
+    <section id="top"><div class="wrap login">
+        <h2 id="title">500 Server Error</h2>
+    </div></section>
+
+    <section id="login"><div class="wrap login">
+        <div class="message warning">We're sorry, but the server is having problems serving, please try again in a few minutes.</div>
+        <a class="left" href="/"><span class="icon icon-home"></span> Return Home</a>
+        <a class="right" href=""><span class="icon icon-refresh"></span> Try again</a>
+    </div></section>
+{% endblock %}

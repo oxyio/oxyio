@@ -1,0 +1,35 @@
+{% import 'function/messages.html' as messages %}
+{% extends 'object/base.html' %}
+
+{% block content %}
+    <form method="post" class="block third">
+        <h3 class="top">Change User &amp; Group</h3>
+
+        {{ messages.messages() }}
+
+        <label for="user">User:</label>
+        <div class="select">
+            <select name="user_id" id="user">
+                <option value="0">&mdash;</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}"{% if object.user_id == user.id %} selected{% endif %}>{{ user.name }} ({{ user.email }})</option>
+                {% endfor %}
+            </select>
+            <span class="icon icon-arrow-down"></span>
+        </div>
+
+        <label for="group">Group:</label>
+        <div class="select">
+            <select name="group_id" id="group">
+                <option value="0">&mdash;</option>
+                {% for group in groups %}
+                    <option value="{{ group.id }}"{% if object.user_group_id == group.id %} selected{% endif %}>{{ group.name }}</option>
+                {% endfor %}
+            </select>
+            <span class="icon icon-arrow-down"></span>
+        </div>
+
+        <button class="button green">Change Owner</button>
+        <small><a href="/{{ module }}/{{ object_type }}/{{ object.id }}">back to {{ object.name }}</a></small>
+    </form>
+{% endblock %}

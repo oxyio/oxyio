@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+    <title>{% block title %}Oxypanel{% endblock %}</title>
+    {% block meta %}{% endblock %}
+
+    {% block css %}
+        {{ assets(
+            'font/ptsans/font.css', 'font/fontawesome/font.css',
+            extension='css', filters='cssmin'
+        ) }}
+    {% endblock %}
+    {% block module_css %}{% endblock %}
+    {% block object_css %}{% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+
+    {% block js %}
+        {% if config.DEBUG %}
+            <script type="text/javascript" src="/static/js/less.js"></script>
+        {% endif %}
+    {% endblock %}
+    {% block module_js %}{% endblock %}
+    {% block object_js %}{% endblock %}
+</body>

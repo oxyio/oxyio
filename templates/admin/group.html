@@ -1,0 +1,18 @@
+{% import 'function/messages.html' as messages %}
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div class="block base">
+        <form class="block third" method="post" action="{{ url_for('admin_edit_group', group_id=group.id) }}">
+            <h2>Editing group {{ group.name }}</h2>
+
+            {{ messages.messages() }}
+
+            <div><label for="name">Name</label>
+            <input type="text" value="{{ group.name }}" id="name" name="name" /></div>
+
+            <button class="button green">Update</button>
+            <small><a href="{{ url_for('admin_users') }}">back to users &amp; groups</a></small>
+
+            {{ csrf_input() }}
+{% endblock %}

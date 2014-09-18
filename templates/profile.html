@@ -1,0 +1,23 @@
+{% import 'function/messages.html' as messages %}
+{% extends 'base_user.html' %}
+
+{% block content %}
+    <div class="block base">
+        <form class="block third" method="post" action="{{ url_for('edit_profile') }}">
+            <h2 class="top">Update Your Profile</h2>
+
+            {{ messages.messages() }}
+
+            <div><label for="name">Name</label>
+                <input type="text" name="name" id="name" value="{{ current_user().name }}" />
+            </div>
+
+            <div><label for="email">Email</label>
+                <input type="text" name="email" id="email" value="{{ current_user().email }}" />
+            </div>
+
+            <button type="submit" class="button green">Update Profile</button>
+        </form>
+    </div>
+
+{% endblock %}

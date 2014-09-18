@@ -1,0 +1,90 @@
+{% import 'function/messages.html' as messages %}
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div class="block base">
+        <div class="block twothird">
+            <h2 class="top">Users</h2>
+
+            <form class="inline" action="" method="get">
+                <div><input type="text"  name="name" placeholder="Filter by name..." value="{{ request.args.name }}" /></div>
+                <div><div class="select"><select name="user_group_id">
+                    <option value="">Filter by group</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}"{% if request.args.user_group_id and request.args.user_group_id|int == group.id %} selected{% endif %}>{{ group.name }}</option>
+                    {% endfor %}
+                    <option value="">&mdash;</option>
+                </select><span class="icon icon-arrow-down"></span></div></div>
+                <div><button type="submit" class="button small blue">Filter</button></div>
+
+                <a class="button right green small">Add User</a>
+            </form>
+
+            <table class="object-based">
+                <thead><tr>
+                    <th width="50px">ID</th>
+                    <th width="20%">Name</th>
+                    <th>Email</th>
+                    <th>User Group</th>
+                    <th>Last Seen</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    {% for user in users %}<tr>
+                        <td>{{ user.id }}</td>
+                        <td>
+                            {{ user.name }}
+                            {% if user.is_keymaster %}
+                                <small>keymaster</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.user_group.name }}</td>
+                        <td></td>
+                        <td class="buttonset align-right">
+                            <a class="button small red" href="#">Delete</a>
+                            <a class="button small blue" href="{{ url_for('admin_view_edit_user', user_id=user.id) }}">Edit</a>
+                        </td>
+                    </tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="block third">
+            <h2 class="top">Add new User Groups</h2>
+            <form action="{{ url_for('admin_add_group') }}" method="post">
+                {{ messages.messages() }}
+                <div class="block base">
+                    <div class="threequarter block">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" id="name" />
+                    </div>
+
+                    <div class="quarter block align-bottom">
+                        <button class="button green small">Add Group</button>
+                    </div>
+                </div>
+            </form>
+
+            <h2>User Groups</h2>
+            <table class="object-based">
+                <thead><tr>
+                    <th width="50px">ID</th>
+                    <th>Name</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    {% for group in groups %}<tr>
+                        <td>{{ group.id }}</td>
+                        <td>{{ group.name }}</td>
+                        <td class="buttonset align-right">
+                            <a class="button small red" href="#">Delete</a>
+                            <a class="button small blue" href="{{ url_for('admin_view_edit_group', group_id=group.id) }}">Edit</a>
+                        </td>
+                    </tr>{% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}

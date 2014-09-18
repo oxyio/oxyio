@@ -1,0 +1,25 @@
+/*  Oxypanel
+    File: static/less/messages.less
+    Desc: message styles
+*/
+
+div.message {
+    padding: 10px 5px;
+    background: @grey;
+    margin-bottom: 10px;
+    border-radius: 3px;
+
+    &.error, &.success, &.warning {
+        color: @white;
+    }
+
+    &.error {
+        background: @red;
+    }
+    &.success {
+        background: @green;
+    }
+    &.warning {
+        background: @orange;
+    }
+}

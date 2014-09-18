@@ -1,0 +1,35 @@
+{% import 'function/messages.html' as messages %}
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div class="block base">
+        <form class="block third" method="post" action="{{ url_for('admin_edit_user', user_id=user.id) }}">
+            <h2>Editing user {{ user.name }}</h2>
+
+            {{ messages.messages() }}
+
+            <div><label for="name">Name</label>
+            <input type="text" value="{{ user.name }}" id="name" name="name" /></div>
+
+            <div><label for="email">Email</label>
+            <input type="text" value="{{ user.email }}" id="email" name="email" /></div>
+
+            <div><label for="user_group_id">User group</label>
+                <div class="select"><select id="user_group_id" name="user_group_id">
+                    <option value="0">&mdash;</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}"{% if group.id == user.user_group_id %} selected{% endif %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="icon icon-arrow-down"></span></div>
+            </div>
+
+            <div class="checkbox"><label for="is_keymaster" class="checkbox">Keymaster user (all permissions): </label>
+                <input type="checkbox"{% if user.is_keymaster %} checked{% endif %} name="is_keymaster" id="is_keymaster" />
+            </div>
+
+            <button class="button green">Update</button>
+            <small><a href="{{ url_for('admin_users') }}">back to users &amp; groups</a></small>
+
+            {{ csrf_input() }}
+{% endblock %}

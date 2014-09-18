@@ -1,0 +1,31 @@
+{% extends 'base_user.html' %}
+
+{% block subheader %}
+    <section id="subheader"><div class="wrap">
+        <h1>{{ object.Config.NAME }}: {{ object.name }}</h1>
+
+        <ul id="links">
+            {% if has_object_permission(module_name, object_type, 'view', object.id) %}
+                <li><a
+                    {% if action == 'view' %}class="active"{% endif %}
+                    href="{{ url_for('view_object', module_name=module_name, object_type=object_type, object_id=object.id) }}"
+                >View</a></li>
+            {% endif %}
+            {% if has_object_permission(module_name, object_type, 'edit', object.id) %}
+                <li><a
+                    {% if action == 'edit' %}class="active"{% endif %}
+                    href="{{ url_for('view_edit_object', module_name=module_name, object_type=object_type, object_id=object.id) }}"
+                >Edit</a></li>
+            {% endif %}
+            {%  if has_global_objects_permission(module_name, object_type, 'owner') %}
+                <li><a
+                    class="red {% if action == 'owner' %}active{% endif %}"
+                    href="{{ url_for('view_owner_object', module_name=module_name, object_type=object_type, object_id=object.id) }}"
+                >Owner</a></li>
+            {% endif %}
+            {% if has_global_objects_permission(module_name, object_type, 'delete') %}
+                <li><a class="red" href="#">Delete</a></li>
+            {% endif %}
+        </ul>
+    </div></section>
+{% endblock %}

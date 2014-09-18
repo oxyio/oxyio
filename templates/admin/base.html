@@ -1,0 +1,19 @@
+{% extends 'base_user.html' %}
+
+{% block modulenav %}
+    <li{% if action == 'settings' %} class="active"{% endif %}>
+        <a href="{{ url_for('admin_settings') }}">Settings</a>
+    </li>
+    <li{% if action == 'users' %} class="active"{% endif %}>
+        <a href="{{ url_for('admin_users') }}">Users &amp; Groups</a>
+    </li>
+    <li{% if action == 'permissions' %} class="active"{% endif %}>
+        <a href="{{ url_for('admin_permissions') }}">Permissions</a>
+    </li>
+    <li{% if action == 'logs' %} class="active"{% endif %}>
+        <a href="{{ url_for('admin_logs') }}">Logs</a>
+    </li>
+    <li{% if action == 'debug' %} class="active"{% endif %}>
+        <a href="{{ url_for('admin_debug') }}">Debug</a>
+    </li>
+{% endblock %}

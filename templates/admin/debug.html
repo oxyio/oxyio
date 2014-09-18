@@ -1,0 +1,53 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <h2 class="top">Config</h2>
+    <p>Static configurables, as defined in <code>config.py</code>.</p>
+    <table>
+        <thead><tr>
+            <th>Key</th>
+            <th>Value</th>
+        </tr></thead>
+        <tbody>
+            {% for name, item in configs.iteritems() %}<tr>
+                <td>{{ name }}</td>
+                <td>{{ item }}</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Modules</h2>
+    <p>Loaded modules &amp; their objects.</p>
+    <table>
+        <thead><tr>
+            <th>Name</th>
+            <th>Objects</th>
+        </tr></thead>
+        <tbody>
+            {% for name, _ in modules.iteritems() %}<tr>
+                <td>{{ name }}</td>
+                <td>{% for object_name, object_class in objects[name].iteritems() %}
+                    {{ object_class.__name__ }} ({{ object_name }})
+                    {% if loop.index != objects[name]|length %}, {% endif %}
+                {% endfor %}</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Routes</h2>
+    <p>Table of all HTTP(S) routes.</p>
+    <table>
+        <thead><tr>
+            <th>Endpoint</th>
+            <th>Function</th>
+            <th>Methods</th>
+        </tr></thead>
+        <tbody>
+            {% for url in urls.iter_rules() %}<tr>
+                <td>{{ url }}</td>
+                <td>{{ url.endpoint }}</td>
+                <td>{{ url.methods }}</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

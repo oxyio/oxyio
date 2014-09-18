@@ -1,0 +1,14 @@
+{% extends 'login.html' %}
+
+{% block title %}405 Method Not Allowed{% endblock %}
+
+{% block body %}
+    <section id="top"><div class="wrap login">
+        <h2 id="title">405 Method Not Allowed</h2>
+    </div></section>
+
+    <section id="login"><div class="wrap login">
+        <div class="message warning">Wrong HTTP method detected.</div>
+        <a class="left" href="/"><span class="icon icon-home"></span> Return Home</a>
+    </div></section>
+{% endblock %}

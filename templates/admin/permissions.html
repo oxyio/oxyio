@@ -1,0 +1,17 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <h2>Setting permissions for {{ groups }}</h2>
+
+    {% for category, items in permissions.iteritems() %}
+        {% if category == 'core' %}
+            <h3>Core</h3>
+            {{ items }}
+        {% else %}
+            {% for object_name, items in items.iteritems() %}
+                <h3>{{ object_name|title }}</h3>
+                {{ items }}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+{% endblock %}

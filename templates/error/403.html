@@ -1,0 +1,14 @@
+{% extends 'login.html' %}
+
+{% block title %}403 Access Denied{% endblock %}
+
+{% block body %}
+    <section id="top"><div class="wrap login">
+        <h2 id="title">403 Access Denied</h2>
+    </div></section>
+
+    <section id="login"><div class="wrap login">
+        <div class="message warning">You do not have permission to perform that action.</div>
+        <a class="left" href="/"><span class="icon icon-home"></span> Return Home</a>
+    </div></section>
+{% endblock %}

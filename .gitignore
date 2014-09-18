@@ -1,0 +1,25 @@
+# Still hoping Apple will stop this one day
+.DS_Store
+# Still hoping Python will stop this one day
+*.pyc
+
+# Secret configs!
+config.py
+
+# Vagrant
+.vagrant
+
+# Node
+node_modules/
+
+# Migrations
+migrations/versions/*
+!migrations/versions/.keepme
+
+# Asset cache
+static/cache/
+
+# Modules
+modules/*
+!modules/__init__.py
+modules_disabled/
