@@ -19,26 +19,7 @@ Vagrant.configure('2') do |config|
         oxypanel.vm.synced_folder './', '/opt/oxypanel'
 
         # Install Oxypanel
-        oxypanel.vm.provision 'shell', path: './deploy/bootstrap.sh', args: 'dev'
-    end
-
-    # Test VM
-    config.vm.define :test, primary: true do |test|
-        test.vm.hostname = 'oxypanel-test'
-        test.vm.box = 'ubuntu/precise64'
-        test.vm.box_url = 'http://files.vagrantup.com/precise64.box'
-
-        # Give the box enough memory
-        test.vm.provider 'virtualbox' do |vbox|
-            vbox.name = 'test'
-            vbox.customize ['modifyvm', :id, '--memory', 1024]
-        end
-
-        # Expose an IP
-        test.vm.network :private_network, ip: '14.14.14.14'
-
-        # Install Oxypanel
-        test.vm.provision 'shell', path: './deploy/bootstrap.sh'
+        oxypanel.vm.provision 'shell', path: 'https://raw.githubusercontent.com/Oxypanel/docs/develop/scripts/bootstrap.sh', args: 'dev'
     end
 
     # Test device
