@@ -9,9 +9,9 @@ from sqlalchemy.orm import exc
 from flask import render_template, redirect, request, session, url_for
 
 import config
-from app import app, db, cache
+from app import app, db
 from models.user import User
-from util.user import check_password, get_current_user, login_required
+from util.user import check_password, get_current_user, login_required, is_logged_in
 from util.response import redirect_or_jsonify
 
 
@@ -24,12 +24,6 @@ def logout():
     session['session_key'] = None
     session['user_id'] = None
 
-    # Remove key in cache
-    try:
-        cache[user.session_key] = None
-    except:
-        pass
-
     # Remove key in db
     user.session_key = None
     db.session.add(user)
@@ -40,6 +34,9 @@ def logout():
 
 @app.route('/login', methods=['GET'])
 def view_login():
+    if is_logged_in():
+        return redirect('/')
+
     return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
@@ -72,13 +69,7 @@ def login():
     db.session.add(user)
     db.session.commit()
 
-    # Assign the cache object
-    try:
-        cache[key] = user.id
-    except:
-        pass
-
-    return redirect('/')
+    return redirect(request.form.get('referrer', '/'))
 
 
 @app.route('/resetpw', methods=['GET'])
