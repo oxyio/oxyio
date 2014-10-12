@@ -1,0 +1,7 @@
+{% extends 'error/base.html' %}
+
+{% block title %}401 Unauthorized{% endblock %}
+{% block error_title %}401 Unauthorized{% endblock %}
+
+{% block error_message %}Your CSRF token is invalid or missing, please go back &amp; try again.{% endblock %}
+{% block error_class %}warning{% endblock %}
