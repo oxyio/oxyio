@@ -9,6 +9,7 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from flask_debugtoolbar import DebugToolbarExtension
 from webassets import Environment
 from pylibmc import Client as MemcacheClient
+from redis import Redis
 
 import config
 
@@ -33,8 +34,15 @@ migrate = Migrate(app, db)
 manager = Manager(app, with_default_commands=False)
 manager.add_command('db', MigrateCommand)
 
-# Cache
+# (mem)Cache
 cache = MemcacheClient(config.CACHE_HOSTS, binary=True)
+
+# Redis
+# TODO: wrap around Redis to handle failover between hosts
+# or, find a haredis for python
+# or, write one
+host, port = config.REDIS_HOSTS[0].split(':')
+redis_client = Redis(host, port=port)
 
 # Assets
 assets = Environment('', '')
