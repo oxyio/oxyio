@@ -22,10 +22,17 @@
             {% block login_inputs %}
                 <input type="text" name="email" placeholder="email" />
                 <input type="password" name="password" placeholder="password" />
+
                 <button type="submit" class="button green">
                     <span class="icon icon-sign-in"></span> Login
                 </button>
                 <small><a href="{{ url_for('resetpw') }}">reset password</a></small>
+
+                {% if request.args.referrer %}
+                    <input type="hidden" name="referrer" value="{{ request.args.referrer }}" />
+                {% endif %}
+
+                {{ csrf_input() }}
             {% endblock %}
         </form>
     </div></section>

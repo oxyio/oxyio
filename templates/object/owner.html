@@ -31,5 +31,7 @@
 
         <button class="button green">Change Owner</button>
         <small><a href="/{{ module }}/{{ object_type }}/{{ object.id }}">back to {{ object.name }}</a></small>
+
+        {{ csrf_input() }}
     </form>
 {% endblock %}
