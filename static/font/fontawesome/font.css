@@ -24,6 +24,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.icon.small {
+    font-size: 85%;
+}
 /* makes the font 33% larger relative to the icon container */
 .icon-lg {
   font-size: 1.33333333em;
