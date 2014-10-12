@@ -6,7 +6,6 @@ from uuid import uuid4
 
 from flask import session, abort, request, Markup
 
-import config
 from app import app
 
 
@@ -14,17 +13,13 @@ from app import app
 # 403 on failure
 @app.before_request
 def csrf_check():
-    # No check when debugging
-    if config.DEBUG:
-        return
-
     # TODO: Check referrer matches us
 
     # Check a valid csrf_token was presented
     if request.method in ['POST', 'PUT', 'DELETE']:
         token = session.pop('csrf_token', None)
         if not token or token != str(request.form.get('csrf_token')):
-            abort(403)
+            abort(401)
 
 
 # Generate/store CSRF tokens
