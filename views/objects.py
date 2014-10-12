@@ -3,13 +3,13 @@
 # Desc: list & add objects
 
 from flask import abort, request, url_for
-from sqlalchemy import or_
 from jinja2 import TemplateNotFound
 
 from app import app, db
 from util.response import render_or_jsonify, redirect_or_jsonify
 from util.data import get_object_class_or_404, get_objects
 from util.user import (
+    get_own_objects,
     login_required, get_current_user,
     has_own_objects_permission, has_any_objects_permission,
     has_global_objects_permission
@@ -36,6 +36,7 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
         objects_name=obj.Config.NAMES,
         list_fields=obj.Config.LIST_FIELDS,
         list_relations=obj.Config.LIST_RELATIONS,
+        list_mrelations=obj.Config.LIST_MRELATIONS,
         objects=objects,
         filter_form=filter_form,
         action=('own' if not is_all else 'all')
@@ -59,15 +60,8 @@ def list_objects(module_name, objects_type):
     if not has_own_objects_permission(module_name, objects_type, 'view'):
         return abort(403)
 
-    user = get_current_user()
     obj = get_object_class_or_404(module_name, objects_type)
-
-    # Start get objects
-    objects = get_objects(module_name, objects_type, or_(
-        obj.user_id==user.id,
-        obj.user_group_id==(-1 if user.user_group_id is None else user.user_group_id)
-    ))
-
+    objects = get_own_objects(module_name, objects_type)
     return _do_list_objects(module_name, objects_type, obj, objects)
 
 
