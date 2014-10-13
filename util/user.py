@@ -123,8 +123,10 @@ def has_object_permission(module_name, object_type, object_id, permission):
     # Get object, check user_id or group_id
     user = get_current_user()
     obj = get_object(module_name, object_type, object_id)
-    if obj.user_id == user.id or obj.user_group_id == user.user_group_id:
+    if obj and obj.user_id == user.id or obj.user_group_id == user.user_group_id:
         return True
+
+    return False
 
 def has_object_permissions(module_name, object_type, object_id, *args):
     if all(has_object_permission(module_name, object_type, permission, object_id) for permission in args):
