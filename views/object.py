@@ -97,10 +97,8 @@ def edit_object(module_name, object_type, object_id):
     )
 
 
-# We want to enable DELETE requests to /object_id
-# but also support browser POSTs to /object_id/delete
-@app.route('/<string:module_name>/<string:object_type>/<int:object_id>', methods=['DELETE'])
 @app.route('/<string:module_name>/<string:object_type>/<int:object_id>/delete', methods=['POST'])
+@login_required
 def delete_object(module_name, object_type, object_id):
     # Check permission
     if not has_global_objects_permission(module_name, object_type, 'delete'):
@@ -146,7 +144,7 @@ def view_owner_object(module_name, object_type, object_id):
         action='owner'
     )
 
-@app.route('/<string:module_name>/<string:object_type>/<int:object_id>/owner', methods=['PUT', 'POST'])
+@app.route('/<string:module_name>/<string:object_type>/<int:object_id>/owner', methods=['POST'])
 @login_required
 def owner_object(module_name, object_type, object_id):
     # Check permission
@@ -172,7 +170,7 @@ def owner_object(module_name, object_type, object_id):
     return redirect_or_jsonify(success='{0} owner changed'.format(object_type.title()))
 
 
-@app.route('/<string:module_name>/<string:object_type>/<int:object_id>/<string:func_name>', methods=['GET', 'PUT', 'POST', 'DELETE'])
+@app.route('/<string:module_name>/<string:object_type>/<int:object_id>/<string:func_name>', methods=['GET', 'POST'])
 @login_required
 def custom_function_object(module_name, object_type, object_id, func_name):
     # Get object from module
