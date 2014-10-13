@@ -19,6 +19,12 @@ from models.permission import Permission
 from .data import get_object, get_objects, get_object_class
 
 
+# Warm request permission cache
+@app.before_request
+def prepare_permissions_g():
+    g.permissions = {}
+
+
 # Get owned objects
 def get_own_objects(module_name, objects_type, *filters):
     obj = get_object_class(module_name, objects_type)
@@ -72,19 +78,16 @@ def is_logged_in():
         return True
 
 
-# Warm request permission cache
-@app.before_request
-def prepare_g():
-    g.permissions = {}
-
 # Check a single permission
 def has_permission(permission):
-    cached = g.permissions.get(permission)
-    if isinstance(cached, bool):
-        return cached
-
     if not get_current_user():
         return False
+
+    # Cache?
+    cache_key = '{0}-{1}'.format(g.user.user_group_id, permission)
+    cached = g.permissions.get(cache_key)
+    if isinstance(cached, bool):
+        return cached
 
     # Keymaster? come on in!...
     if g.user.is_keymaster:
@@ -94,11 +97,11 @@ def has_permission(permission):
     try:
         Permission.query.filter_by(user_group_id=g.user.user_group_id, name=permission).one()
     except (NoResultFound, MultipleResultsFound):
-        g.permissions[permission] = False
+        g.permissions[cache_key] = False
         return False
 
     # Cache for request
-    g.permissions[permission] = True
+    g.permissions[cache_key] = True
     return True
 
 # Check multiple permissions
