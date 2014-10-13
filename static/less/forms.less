@@ -112,10 +112,34 @@ form {
         &:hover {
             select {
                 background: @inputHover;
+
+                &:disabled {
+                    background: @grey;
+                }
             }
 
             span.icon {
                 color: @black;
+            }
+        }
+
+        &.multi {
+            select {
+                height: auto;
+            }
+
+            option {
+                opacity: 0.6;
+
+                &:checked {
+                    opacity: 1;
+                }
+            }
+
+            span.icon {
+                position: absolute;
+                right: 0;
+                top: 0;
             }
         }
     }

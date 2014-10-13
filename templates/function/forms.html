@@ -42,8 +42,20 @@
     </div>
 {% endmacro %}
 
+{% macro mrelation(field, objects, value, options) %}
+    {{ label(prettify_relation(field), options.text) }}
+    <div class="select multi">
+        <select {% if not options.editable %}disabled{% endif %} multiple id="{{ field }}" name="{{ field }}">
+            {% if options.editable %}<option value="0">&mdash;</option>{% endif %}
+            {% for obj in objects %}
+                <option value="{{ obj.id }}"{% if obj.id in options.related_ids %} selected{% endif %}>{{ obj.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{% endmacro %}
+
 {% macro fields(form_data, object={}) %}
-    {% for (field, type, args, options) in form_data %}
+    {% for (type, field, args, options) in form_data %}
         <div>
             {% if type == 'string' %}
                 {{ string(field, args, object[field], options) }}
@@ -53,17 +65,17 @@
                 {{ enum(field, args, object[field], options) }}
             {% elif type == 'relation' %}
                 {{ relation(field, args, object[field], options) }}
+            {% elif type == 'mrelation' %}
+                {{ mrelation(field, args, object[field], options) }}
             {% else %}
-                {{ field }}
                 {{ type }}
-                {{ args }}
             {% endif %}
         </div>
     {% endfor %}
 {% endmacro %}
 
 {% macro filter_fields(form_data) %}
-    {% for (field, type, args, _) in form_data %}
+    {% for (type, field, args, _) in form_data %}
         <div>
             {% if type == 'string' %}
                 {{ string(field, args, request.args[field], {'inline': True}) }}

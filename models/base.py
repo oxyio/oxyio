@@ -5,13 +5,15 @@
 #       items are owned by objects
 
 from flask import request
-from sqlalchemy import or_
 from sqlalchemy.ext.declarative import declared_attr
 
 from app import db
 from util import log
-from util.data import get_objects, get_object_class, get_object
-from util.user import get_current_user
+from util.data import get_object_class
+from util.user import (
+    get_own_objects, get_object,
+    has_own_objects_permission, has_object_permission
+)
 
 
 # Map string types -> python types
@@ -43,6 +45,7 @@ class BaseConfig:
 
     LIST_FIELDS = EDIT_FIELDS = []
     LIST_RELATIONS = EDIT_RELATIONS = []
+    LIST_MRELATIONS = EDIT_MRELATIONS = []
 
     ROUTES = []
 
@@ -79,11 +82,11 @@ class BaseObject:
             override = options.get('override')
             if override:
                 arg = getattr(self, override[1])()
-                form.append((field, override[0], arg, override[2]))
+                form.append((override[0], field, arg, override[2]))
             else:
                 col = self.__table__.columns.get(field)
                 string_type, _, arg = _column_to_python(col.type)
-                form.append((field, string_type, arg, options))
+                form.append((string_type, field, arg, options))
 
         return form
 
@@ -92,19 +95,33 @@ class BaseObject:
         # Normal edit fields + name
         form = self._config_to_form([('name', {})] + self.Config.EDIT_FIELDS)
 
-        # Related objects
-        user = get_current_user()
-        for (module_name, objects_type, options) in self.Config.EDIT_RELATIONS:
-            obj = get_object_class(module_name, objects_type)
+        # Check we have permission to edit the target relation or m(ulti)relation
+        # append in similar format to _config_to_form
+        def _do_relation(field_type, module_name, objects_type, field_name, options):
+            # Do we have EditOwn permission on this type of object?
+            if has_own_objects_permission(module_name, objects_type, 'edit'):
+                objects = get_own_objects(module_name, objects_type)
+                options['editable'] = True
+            else:
+                objects = getattr(self, field_name)
+                options['editable'] = False
+
             form.append((
-                '{0}_id'.format(objects_type),
-                'relation',
-                get_objects(module_name, objects_type, or_(
-                    obj.user_id==user.id,
-                    obj.user_group_id==(-1 if user.user_group_id is None else user.user_group_id)
-                )),
+                field_type,
+                field_name,
+                objects,
                 options
             ))
+
+        # Related objects
+        for (module_name, objects_type, options) in self.Config.EDIT_RELATIONS:
+            _do_relation('relation', module_name, objects_type, '{0}_id'.format(objects_type), options)
+
+        # Many/Multi-related objects
+        for (module_name, objects_type, objects_field, options) in self.Config.EDIT_MRELATIONS:
+            obj = get_object_class(module_name, objects_type)
+            options['related_ids'] = [obj.id for obj in getattr(self, objects_field)]
+            _do_relation('mrelation', module_name, objects_type, objects_field, options)
 
         return form
 
@@ -154,23 +171,41 @@ class BaseObject:
         # Ensure related items exist
         for (module_name, object_type, _) in self.Config.EDIT_RELATIONS:
             field_name = '{0}_id'.format(object_type)
-            data = request.form.get(field_name)
+            object_id = request.form.get(field_name)
 
             try:
-                data = int(data)
-                if data == 0: data = None
+                object_id = int(object_id)
+                if object_id == 0: object_id = None
             except ValueError:
-                data = None
-                return False, 'Invalid data, not ID for: {0}'.format(object_type)
+                return False, 'Invalid object_id for: {0}'.format(object_type)
 
-            # Try to find the object
-            if data is not None:
-                obj = get_object(module_name, object_type, data)
-                if not obj:
-                    return False, 'Invalid related object ({0} {1})'.format(module_name, object_type)
+            # Skip if set None or no change
+            if object_id is None or getattr(self, field_name) == object_id:
+                continue
+
+            # Check we even have edit permission on this object type
+            if not has_object_permission(module_name, object_type, object_id, 'Edit'):
+                return False, 'You do not have permission to set {0} => {1} #{2}'.format(field_name, object_type, object_id)
 
             # Set the object
-            setattr(self, field_name, data)
+            setattr(self, field_name, object_id)
+
+        # Ensure mrelated items exist
+        for (module_name, object_type, field_name, _) in self.Config.EDIT_MRELATIONS:
+            object_ids = request.form.getlist(field_name)
+
+            try:
+                object_ids = set([int(i) for i in object_ids])
+            except ValueError:
+                return False, 'Invalid object_ids for: {0}'.format(object_type)
+
+            # Check edit permissions for each object
+            if not all(has_object_permission(module_name, object_type, object_id, 'Edit') for object_id in object_ids):
+                return False, 'You do not have permission to set {0} => {1} #s: {2}'.format(field_name, object_type, object_ids)
+
+            # Set the objects
+            new_objects = [get_object(module_name, object_type, object_id) for object_id in object_ids if object_id > 0]
+            setattr(self, field_name, new_objects)
 
         return True, None
 

@@ -36,11 +36,14 @@
                 <th width="15%">User</th>
                 <th width="15%">User Group</th>
             {% endif %}
-            {% for (field,_) in list_fields %}
+            {% for (field, _) in list_fields %}
                 <th>{{ field|title }}</th>
             {% endfor %}
-            {% for (module,field,_) in list_relations %}
+            {% for (module, field, _) in list_relations %}
                 <th>{{ prettify_relation(field|title) }}</th>
+            {% endfor %}
+            {% for (module, type, field, _) in list_mrelations %}
+                <th>{{ field|title }}</th>
             {% endfor %}
             <th width="145px"></th>
         </tr></thead>
@@ -68,6 +71,11 @@
                     <td>{% if object[field] %}
                         <a class="module-color" href="{{ url_for('view_object', module_name=module, object_type=field, object_id=object[field].id) }}">{{ object[field].name }}</a>
                     {% endif %}</td>
+                {% endfor %}
+                {% for (module,type, field,_) in list_mrelations %}
+                    <td>{% for object in object[field] %}
+                        <a class="module-color" href="{{ url_for('view_object', module_name=module, object_type=type, object_id=object.id) }}">{{ object.name }}</a>{% if not loop.last %}, {% endif %}
+                    {% endfor %}</td>
                 {% endfor %}
                 <td class="buttonset align-right">
                     {% if action == 'own' %}

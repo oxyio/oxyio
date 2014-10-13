@@ -30,17 +30,18 @@ def admin_permissions():
 
     # Object permissions
     for module_name, objects in object_map.iteritems():
+        module_title = module_name.title()
         for object_name, object_class in objects.iteritems():
             object_title = object_name.title()
 
             permissions['objects'][object_name] = [
-                'ViewOwn{0}'.format(object_title),
-                'EditOwn{0}'.format(object_title),
-                'ViewAny{0}'.format(object_title),
-                'EditAny{0}'.format(object_title),
-                'Add{0}'.format(object_title),
-                'Delete{0}'.format(object_title),
-                'Owner{0}'.format(object_title)
+                'ViewOwn{0}{1}'.format(module_title, object_title),
+                'EditOwn{0}{1}'.format(module_title, object_title),
+                'ViewAny{0}{1}'.format(module_title, object_title),
+                'EditAny{0}{1}'.format(module_title, object_title),
+                'Add{0}{1}'.format(module_title, object_title),
+                'Delete{0}{1}'.format(module_title, object_title),
+                'Owner{0}{1}'.format(module_title, object_title)
             ]
 
     groups = UserGroup.query.all()
