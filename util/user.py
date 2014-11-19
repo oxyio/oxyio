@@ -16,7 +16,7 @@ from app import app
 from models.user import User
 from models.permission import Permission
 
-from .data import get_object, get_objects, get_object_class
+from .objects import get_object, get_objects, get_object_class
 
 
 # Warm request permission cache

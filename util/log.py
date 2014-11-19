@@ -1,6 +1,6 @@
 # Oxypanel
 # File: util/log.py
-# Desc: logging utilities
+# Desc: logging utilities & system log
 
 import logging
 
@@ -11,6 +11,8 @@ import config
 
 logger = logging.getLogger('oxypanel')
 
+
+# Setup colored logs & debug error pages
 log_args = {
     'show_timestamps': False,
     'show_hostname': False
@@ -21,23 +23,3 @@ if config.DEBUG:
     logger.debug('Debug enabled')
 else:
     coloredlogs.install(level=logging.CRITICAL, **log_args)
-
-def critical(*args):
-    for arg in args:
-        logger.critical(arg)
-
-def error(*args):
-    for arg in args:
-        logger.error(arg)
-
-def warning(*args):
-    for arg in args:
-        logger.warning(arg)
-
-def info(*args):
-    for arg in args:
-        logger.info(arg)
-
-def debug(*args):
-    for arg in args:
-        logger.debug(arg)
