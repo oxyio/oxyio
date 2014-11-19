@@ -12,7 +12,7 @@ import config
 from app import app, db
 from models.user import User
 from util.user import check_password, get_current_user, login_required, is_logged_in
-from util.response import redirect_or_jsonify
+from util.web.response import redirect_or_jsonify
 
 
 @app.route('/logout', methods=['GET'])
@@ -88,7 +88,7 @@ def resetpw():
 def view_profile():
     return render_template('profile.html')
 
-@app.route('/profile', methods=['PUT', 'POST'])
+@app.route('/profile', methods=['POST'])
 @login_required
 def edit_profile():
     user = get_current_user()

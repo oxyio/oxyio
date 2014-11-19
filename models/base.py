@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from app import db
 from util import log
-from util.data import get_object_class
+from util.objects import get_object_class
 from util.user import (
     get_own_objects, get_object,
     has_own_objects_permission, has_object_permission
@@ -46,6 +46,7 @@ class BaseConfig:
     LIST_FIELDS = EDIT_FIELDS = []
     LIST_RELATIONS = EDIT_RELATIONS = []
     LIST_MRELATIONS = EDIT_MRELATIONS = []
+    LIST_OBJECTS = []
 
     ROUTES = []
 
