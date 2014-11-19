@@ -11,6 +11,9 @@ import sys
 
 from flask.ext.script import Shell
 
+import config
+config.BOOTING = 'manage'
+
 from app import manager
 from scripts import user, node # noqa
 
