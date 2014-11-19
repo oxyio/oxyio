@@ -1,7 +1,11 @@
+# Oxypanel
+# File: views/admin/logs.py
+# Desc: view system logs (in ES)
+
 from flask import g
 
 from app import app
-from util.response import render_or_jsonify
+from util.web.response import render_or_jsonify
 
 
 @app.route('/admin/logs', methods=['GET'])

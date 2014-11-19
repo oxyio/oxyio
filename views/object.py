@@ -8,8 +8,8 @@ from jinja2 import TemplateNotFound
 from app import app
 from models.user import User, UserGroup
 from util.user import has_object_permission, login_required, has_global_objects_permission
-from util.data import get_object_or_404
-from util.response import redirect_or_jsonify, render_or_jsonify
+from util.objects import get_object_or_404
+from util.web.response import redirect_or_jsonify, render_or_jsonify
 
 
 @app.route('/<string:module_name>/<string:object_type>/<int:object_id>', methods=['GET'])
@@ -65,7 +65,7 @@ def view_edit_object(module_name, object_type, object_id):
         return render_or_jsonify('object/edit.html', **data)
 
 @app.route('/<string:module_name>/<string:object_type>/<int:object_id>',
-    methods=['PUT', 'POST'])
+    methods=['POST'])
 @login_required
 def edit_object(module_name, object_type, object_id):
     # Check permission

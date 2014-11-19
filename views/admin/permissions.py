@@ -5,7 +5,7 @@
 from flask import g
 
 from app import app, object_map
-from util.response import render_or_jsonify
+from util.web.response import render_or_jsonify
 from util.user import permissions_required
 from models.user import UserGroup
 

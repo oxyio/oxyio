@@ -9,9 +9,10 @@ from hashlib import md5
 from flask import Markup, g, url_for
 from webassets import Bundle
 
+import config
 from app import app, assets, module_map, object_map
 
-from .user import (
+from ..user import (
     get_current_user,
     has_permission, has_permissions,
     has_object_permission, has_object_permissions,
@@ -27,6 +28,12 @@ app.jinja_env.globals['has_object_permissions'] = has_object_permissions
 app.jinja_env.globals['has_own_objects_permission'] = has_own_objects_permission
 app.jinja_env.globals['has_any_objects_permission'] = has_any_objects_permission
 app.jinja_env.globals['has_global_objects_permission'] = has_global_objects_permission
+
+
+def get_config():
+    return config
+
+app.jinja_env.globals['get_config'] = get_config
 
 
 def prettify_relation_field(field):

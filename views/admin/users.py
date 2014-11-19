@@ -7,7 +7,7 @@ from flask import g, abort, request, url_for
 from app import app, db
 from models.user import User, UserGroup
 from util.user import permissions_required
-from util.response import render_or_jsonify, redirect_or_jsonify
+from util.web.response import render_or_jsonify, redirect_or_jsonify
 
 
 def _get_user_or_404(user_id):
@@ -87,7 +87,7 @@ def admin_edit_user(user_id):
 def admin_add_user():
     pass
 
-@app.route('/admin/users/<int:user_id>', methods=['DELETE'])
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_delete_user(user_id):
     user = _get_user_or_404(user_id)
@@ -128,7 +128,7 @@ def admin_view_edit_group(group_id):
         group=group
     )
 
-@app.route('/admin/groups/<int:group_id>', methods=['POST', 'PUT'])
+@app.route('/admin/groups/<int:group_id>', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_edit_group(group_id):
     name = request.form.get('name')
@@ -142,7 +142,7 @@ def admin_edit_group(group_id):
     db.session.commit()
     return redirect_or_jsonify(success='Group updated')
 
-@app.route('/admin/groups/<int:user_group_id>', methods=['DELETE'])
+@app.route('/admin/groups/<int:user_group_id>/delete', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_delete_user_group(user_group_id):
     group = UserGroup.query.get(user_group_id)

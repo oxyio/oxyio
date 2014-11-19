@@ -6,7 +6,7 @@ from flask import g
 
 import config
 from app import app, module_map, object_map
-from util.response import render_or_jsonify
+from util.web.response import render_or_jsonify
 from util.user import permissions_required
 
 
@@ -19,6 +19,25 @@ def admin_debug():
         action='debug',
         modules=module_map,
         objects=object_map,
-        urls=app.url_map,
-        configs={k: getattr(config, k) for k in dir(config) if(isinstance(k, str) and k.isupper())}
+        urls={
+            url: {
+                'endpoint': url.endpoint,
+                'methods': url.methods - {'OPTIONS', 'HEAD'}
+            }
+            for url in app.url_map.iter_rules()
+            if 'debugtoolbar' not in url.endpoint and 'debug_toolbar' not in url.endpoint
+        },
+        configs={
+            key: getattr(config, key)
+            for key in dir(config)
+            if(isinstance(key, str) and key.isupper())
+        },
+        module_configs={
+            name: {
+                key: getattr(module.config, key)
+                for key in dir(module.config)
+                if(isinstance(key, str) and key.isupper())
+            }
+            for name, module in module_map.iteritems()
+        }
     )

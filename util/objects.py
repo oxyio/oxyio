@@ -1,5 +1,5 @@
 # Oxypanel
-# File: util/app.py
+# File: util/objects.py
 # Desc: global loading of modules & their objects
 
 from flask import g, abort

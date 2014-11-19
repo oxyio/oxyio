@@ -2,7 +2,29 @@
 # File: util/response.py
 # Desc: useful response fucntions
 
+from datetime import datetime
+
 from flask import request, jsonify, redirect, flash, render_template
+
+from app import app
+
+
+@app.after_request
+def log_request(response):
+    log = {
+        'date': datetime.now(),
+        'remote_ip': request.remote_addr,
+        'request_method': request.method,
+        'request_url': request.url,
+        'request_headers': request.headers,
+        'request_body': request.data,
+        'response_headers': response.headers,
+        'response_status': response.status_code
+    }
+
+    print log
+    print 'WRITE THIS INTO ES ^^^^^^^^^^^^^^'
+    return response
 
 
 def redirect_or_jsonify(url=None, **kwargs):

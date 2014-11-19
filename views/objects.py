@@ -5,9 +5,9 @@
 from flask import abort, request, url_for
 from jinja2 import TemplateNotFound
 
-from app import app, db
-from util.response import render_or_jsonify, redirect_or_jsonify
-from util.data import get_object_class_or_404, get_objects
+from app import app
+from util.web.response import render_or_jsonify, redirect_or_jsonify
+from util.objects import get_object_class_or_404, get_objects
 from util.user import (
     get_own_objects,
     login_required, get_current_user,
@@ -113,9 +113,8 @@ def add_objects(module_name, object_type):
     # Set the user_id to current user
     new_object.user_id = get_current_user().id
 
-    # Add & commit!
-    db.session.add(new_object)
-    db.session.commit()
+    # Save it!
+    new_object.save()
 
     # Post add & hooks
     new_object.post_add()
