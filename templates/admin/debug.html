@@ -1,22 +1,7 @@
 {% extends 'admin/base.html' %}
 
 {% block content %}
-    <h2 class="top">Config</h2>
-    <p>Static configurables, as defined in <code>config.py</code>.</p>
-    <table>
-        <thead><tr>
-            <th>Key</th>
-            <th>Value</th>
-        </tr></thead>
-        <tbody>
-            {% for name, item in configs.iteritems() %}<tr>
-                <td>{{ name }}</td>
-                <td>{{ item }}</td>
-            </tr>{% endfor %}
-        </tbody>
-    </table>
-
-    <h2>Modules</h2>
+    <h2 class="top">Modules</h2>
     <p>Loaded modules &amp; their objects.</p>
     <table>
         <thead><tr>
@@ -34,6 +19,38 @@
         </tbody>
     </table>
 
+    <h2>Base Config</h2>
+    <p>Static configurables, as defined in <code>config.py</code>.</p>
+    <table>
+        <thead><tr>
+            <th width="15%">Key</th>
+            <th>Value</th>
+        </tr></thead>
+        <tbody>
+            {% for name, item in configs.iteritems() %}<tr>
+                <td>{{ name }}</td>
+                <td><code>{{ item }}</code></td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+
+    {% for module, confs in module_configs.iteritems() %}
+        <h2>{{ confs.NAME }} Config</h2>
+
+        <table>
+        <thead><tr>
+            <th width="15%">Key</th>
+            <th>Value</th>
+        </tr></thead>
+        <tbody>
+            {% for name, item in confs.iteritems() %}<tr>
+                <td>{{ name }}</td>
+                <td><code>{{ item }}</code></td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+
     <h2>Routes</h2>
     <p>Table of all HTTP(S) routes.</p>
     <table>
@@ -43,10 +60,12 @@
             <th>Methods</th>
         </tr></thead>
         <tbody>
-            {% for url in urls.iter_rules() %}<tr>
+            {% for url, details in urls.iteritems() %}<tr>
                 <td>{{ url }}</td>
-                <td>{{ url.endpoint }}</td>
-                <td>{{ url.methods }}</td>
+                <td><code>{{ details.endpoint }}</code></td>
+                <td>{% for method in details.methods %}
+                    <code>{{ method }}</code>{% if not loop.last %}, {% endif %}
+                {% endfor %}</td>
             </tr>{% endfor %}
         </tbody>
     </table>
