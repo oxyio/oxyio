@@ -1,7 +1,11 @@
 <!doctype html>
 <html>
 <head>
-    <title>{% block title %}Oxypanel{% endblock %}</title>
+    <title>
+        {% block title %}{% endblock %}
+        {% if self.title() %} | {% endif %}
+        Oxypanel
+    </title>
     {% block meta %}{% endblock %}
 
     {% block css %}

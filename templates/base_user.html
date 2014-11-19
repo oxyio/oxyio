@@ -13,7 +13,12 @@
         <section id="header"><div class="wrap">
             <h2 id="title">
                 <!--<a href="#"><span class="icon icon-toggle-left"></span></a>-->
-                <a href="/">Oxypanel</a>
+                <a href="/">
+                    {% if get_config().NAME %}
+                        <small>{{ get_config().NAME }}</small>
+                    {% endif %}
+                    Oxypanel
+                </a>
             </h2>
 
             <ul id="modules">
