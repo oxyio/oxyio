@@ -1,5 +1,5 @@
 {% import 'function/forms.html' as forms %}
-{% import 'function/messages.html' as messages %}
+{% import 'function/flashes.html' as flashes %}
 {% extends 'base_user.html' %}
 
 {% block subheader %}
@@ -18,7 +18,7 @@
 {% block content %}
     <div class="block base">
         <form action="#" method="post" class="third block">
-            {{ messages.messages() }}
+            {{ flashes.messages() }}
 
             {{ forms.fields(add_form) }}
 

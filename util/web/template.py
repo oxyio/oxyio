@@ -1,5 +1,5 @@
 # Oxypanel
-# File: util/templates.py
+# File: util/template.py
 # Desc: template functions
 
 from os import path
@@ -12,6 +12,11 @@ from webassets import Bundle
 import config
 from app import app, assets, module_map, object_map
 
+
+from .flashes import get_flashed_request
+app.jinja_env.globals['get_flashed_request'] = get_flashed_request
+
+
 from ..user import (
     get_current_user,
     has_permission, has_permissions,
@@ -19,7 +24,6 @@ from ..user import (
     has_own_objects_permission, has_any_objects_permission,
     has_global_objects_permission
 )
-
 app.jinja_env.globals['current_user'] = get_current_user
 app.jinja_env.globals['has_permission'] = has_permission
 app.jinja_env.globals['has_permissions'] = has_permissions

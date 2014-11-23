@@ -1,4 +1,4 @@
-{% import 'function/messages.html' as messages %}
+{% import 'function/flashes.html' as flashes %}
 {% extends 'base_user.html' %}
 
 {% block content %}
@@ -6,7 +6,7 @@
         <form class="block third" method="post" action="{{ url_for('edit_profile') }}">
             <h2 class="top">Update Your Profile</h2>
 
-            {{ messages.messages() }}
+            {{ flashes.messages() }}
 
             <div><label for="name">Name</label>
                 <input type="text" name="name" id="name" value="{{ current_user().name }}" />

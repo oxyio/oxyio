@@ -1,4 +1,4 @@
-{% import 'function/messages.html' as messages %}
+{% import 'function/flashes.html' as flashes %}
 {% extends 'base.html' %}
 
 {% block title %}Login{% endblock %}
@@ -16,7 +16,7 @@
     </div></section>
 
     <section id="login"><div class="wrap login">
-        {{ messages.messages() }}
+        {{ flashes.messages() }}
 
         <form method="post" action="">
             {% block login_inputs %}

@@ -3,3 +3,7 @@
         <div class="message {{ category }}">{{ message }}</div>
     {% endfor %}
 {% endmacro %}
+
+{% macro request(name) %}
+    {{ get_flashed_request(name) }}
+{% endmacro %}

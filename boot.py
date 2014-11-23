@@ -84,7 +84,7 @@ if config.BOOTING == 'web':
     from flask import Blueprint
 
     # Import web utils
-    from util.web import route, templates, csrf # noqa
+    from util.web import route, template, csrf # noqa
 
     # Import core views
     from views import dashboard, account, error, object, objects # noqa
