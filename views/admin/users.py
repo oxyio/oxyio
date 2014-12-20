@@ -6,7 +6,7 @@ from flask import g, abort, request, url_for
 
 from app import app, db
 from models.user import User, UserGroup
-from util.user import permissions_required
+from util.web.user import permissions_required
 from util.web.response import render_or_jsonify, redirect_or_jsonify
 
 
@@ -56,7 +56,7 @@ def admin_view_edit_user(user_id):
         groups=groups
     )
 
-@app.route('/admin/users/<int:user_id>', methods=['POST'])
+@app.route('/admin/users/<int:user_id>/edit', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_edit_user(user_id):
     user = _get_user_or_404(user_id)
@@ -82,7 +82,7 @@ def admin_edit_user(user_id):
     db.session.commit()
     return redirect_or_jsonify(success='User updated')
 
-@app.route('/admin/users/add', methods=['POST'])
+@app.route('/admin/users', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_add_user():
     pass
@@ -128,7 +128,7 @@ def admin_view_edit_group(group_id):
         group=group
     )
 
-@app.route('/admin/groups/<int:group_id>', methods=['POST'])
+@app.route('/admin/groups/<int:group_id>/edit', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_edit_group(group_id):
     name = request.form.get('name')
