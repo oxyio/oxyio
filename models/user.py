@@ -33,6 +33,10 @@ class User(db.Model):
     user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete='SET NULL'))
     user_group = db.relationship('UserGroup', backref=db.backref('users'))
 
+    @property
+    def gravatar(self):
+        return 'http://www.gravatar.com/avatar/{0}?s=40&d=retro'.format(md5(self.email).hexdigest())
+
     def __init__(self, email, password, name=None):
         from util.user import hash_password # prevent circular import
 
@@ -43,7 +47,3 @@ class User(db.Model):
             self.name = email
         else:
             self.name = name
-
-    @property
-    def gravatar(self):
-        return 'http://www.gravatar.com/avatar/{0}?s=40&d=retro'.format(md5(self.email).hexdigest())
