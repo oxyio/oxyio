@@ -11,20 +11,20 @@ from app import redis_client
 
 def _build_task(task_name, task_data):
     data = {
-        'function': task_name,
+        'task': task_name,
         'data': json.dumps(task_data)
     }
 
     return data
 
 
-# Get list of active task_ids
 def get_task_ids():
+    '''Get a list of active task_ids'''
     return redis_client.sgetall(config.REDIS['TASK_SET'])
 
 
-# Get a task & it's relevant data
 def get_task(task_id):
+    '''Get a task & it's relevant data'''
     task_exists = redis_client.sismember(config.REDIS['TASK_SET'], task_id)
 
     if task_exists:
@@ -44,8 +44,9 @@ def _set_task(task_id, task_name, task_data):
         _build_task(task_name, task_data)
     )
 
-# Start a new task
+
 def start_task(task_id, task_name, task_data):
+    '''Start a new task'''
     # This implies a non-long-running task
     # thus no option in start_upate
     if task_id is None:
@@ -57,8 +58,8 @@ def start_task(task_id, task_name, task_data):
     return task_id
 
 
-# Start or update an existing task
 def start_update_task(task_id, task_name, task_data):
+    '''Start or update an existing task'''
     task_exists = redis_client.sismember(config.REDIS['TASK_SET'], task_id)
 
     # If the task is active, send reload command
@@ -75,8 +76,8 @@ def start_update_task(task_id, task_name, task_data):
         return start_task(task_id, task_name, task_data)
 
 
-# Stop a task
 def stop_task(task_id):
+    '''Stop a task'''
     redis_client.publish(
         '{0}{1}-control'.format(config.REDIS['TASK_PREFIX'], task_id),
         'stop'
