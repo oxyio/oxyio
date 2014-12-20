@@ -25,20 +25,26 @@ monkey.patch_all()
 import config
 # What are we attempting to boot?
 try:
+    # uwsgi always = web mode
     import uwsgi
     config.BOOTING = 'web'
 except ImportError:
     uwsgi = None
-    config.BOOTING = sys.argv[1]
+    config.BOOTING = getattr(config, 'BOOTING', False) or sys.argv[1]
 
-# Import the shared app namespace
-from app import app, module_map, object_map
+# Import app for uwsgi shortcut
+from app import app
 
 # The app is wrapped by flask-uwsgi-websocket, and app.run will exit with the uwsgi command
 if uwsgi is None and config.BOOTING == 'web':
-    app.run(app='boot:app', gevent=100, port=config.PORTS['WEB'])
-    sys.exit(0)
+    app.run(app='boot:app', gevent=config.GEVENT, port=config.PORT)
+    sys.exit(0) # just in case ;)
+
+
 # Now we're booting something, web+uwsgi or task+pytask
+
+# Import shared object maps
+from app import module_map, object_map, item_map, task_map, websocket_map # noqa
 
 # Import shared utils
 from util.log import logger
@@ -46,37 +52,56 @@ from util.log import logger
 # Import shared models
 from models import user, permission # noqa
 
-# Imports modules & their objects
-# importable (manage.py)
-def load_modules():
-    # Load all modules
-    for name in [d for d in listdir('modules') if not path.isfile(path.join('modules', d))]:
-        logger.debug('Loading module: {0}'.format(name))
+# Import core websockets
+from websockets import task # noqa
 
-        # Import the module
-        module = import_module('modules.{0}'.format(name))
-        import_module('modules.{0}.views'.format(name))
-        import_module('modules.{0}.config'.format(name))
+# Import core tasks
+from tasks import update # noqa
 
-        module_map[name] = module
-        object_map[name] = {}
 
-        # Module load?
-        if hasattr(module, 'load'):
-            logger.debug('[{0}] Module load'.format(name))
-            module.load()
+# Import all modules & their objects/websockets/tasks
+for name in [d for d in listdir('modules') if not path.isfile(path.join('modules', d))]:
+    logger.debug('Loading module: {0}'.format(name))
 
-        # Load objects
-        if hasattr(module.config, 'OBJECTS'):
-            for file_name, classes in module.config.OBJECTS.iteritems():
-                for (db_name, object_class) in classes:
-                    logger.debug('[{0}] Loading object: {1}'.format(name, object_class))
+    # Import the module
+    module = import_module('modules.{0}'.format(name))
+    import_module('modules.{0}.views'.format(name))
+    import_module('modules.{0}.config'.format(name))
 
-                    # Import the object
-                    object_module = import_module('modules.{0}.models.{1}'.format(name, file_name))
-                    object_data = getattr(object_module, object_class)
-                    object_map[name][db_name] = object_data
-load_modules()
+    module_map[name] = module
+    object_map[name] = {}
+    item_map[name] = {}
+    websocket_map[name] = {}
+    task_map[name] = {}
+
+    # Module load?
+    if hasattr(module, 'load'):
+        logger.debug('[{0}] Module load'.format(name))
+        module.load()
+
+    # Get objects
+    files = glob(path.join('modules', name, 'models', '*.py'))
+    for file in files:
+        if file.endswith('__.py'): continue
+        file = path.basename(file).replace('.py', '')
+        logger.debug('[{0}] Importing models file: {1}'.format(name, file))
+        import_module('modules.{0}.models.{1}'.format(name, file))
+
+    # Get websockets
+    files = glob(path.join('modules', name, 'websockets', '*.py'))
+    for file in files:
+        if file.endswith('__.py'): continue
+        file = path.basename(file).replace('.py', '')
+        logger.debug('[{0}] Importing websocket file: {1}'.format(name, file))
+        import_module('modules.{0}.websockets.{1}'.format(name, file))
+
+    # Get tasks
+    files = glob(path.join('modules', name, 'tasks', '*.py'))
+    for file in files:
+        if file.endswith('__.py'): continue
+        file = path.basename(file).replace('.py', '')
+        logger.debug('[{0}] Importing task file: {1}'.format(name, file))
+        import_module('modules.{0}.tasks.{1}'.format(name, file))
 
 
 # Booting web mode?
@@ -84,12 +109,13 @@ if config.BOOTING == 'web':
     from flask import Blueprint
 
     # Import web utils
-    from util.web import route, template, csrf # noqa
+    from util.web import route, template, csrf, cookie # noqa
 
-    # Import core views
-    from views import dashboard, account, error, object, objects # noqa
+    # Import views
+    from views import dashboard, account, error, object, objects, websocket # noqa
     from views.admin import debug, logs, permissions, settings, users, dashboard # noqa
 
+    # Make module blueprints
     for name, module in module_map.iteritems():
         # Make flask blueprint
         module_blueprint = Blueprint(name, name,
@@ -107,24 +133,19 @@ if config.BOOTING == 'web':
         # Register blueprint
         app.register_blueprint(module_blueprint)
 
+    # Import web util's pubsub to kickstart listen thread
+    from util.web import pubsub # noqa
+
 
 # Booting task mode?
 elif config.BOOTING == 'task':
     from app import task_app
 
-    # Import core tasks
-    from tasks import task, update # noqa
-
-    # Load the tasks from each module
-    for module_name in module_map.keys():
-        files = glob(path.join('modules', module_name, 'tasks', '*.py'))
-
-        for file in files:
-            if file.endswith('__.py'): continue
-            file = path.basename(file).replace('.py', '')
-            logger.debug('[{0}] Adding task: {1}'.format(module_name, file))
-            import_module('modules.{0}.tasks.{1}'.format(module_name, file))
-
     # Boot pytask
     if __name__ == '__main__':
-        task_app.run()
+        pytask_map = {}
+        for _, tasks in task_map.iteritems():
+            for _, task_class in tasks.iteritems():
+                pytask_map[task_class.NAME] = task_class
+
+        task_app.run(pytask_map)

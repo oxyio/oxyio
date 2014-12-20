@@ -14,8 +14,11 @@ from flask.ext.script import Shell
 import config
 config.BOOTING = 'manage'
 
+# Boot some stuff
+import boot # noqa
+
 from app import manager
-from scripts import user, node # noqa
+from scripts import user # noqa
 
 
 if __name__ == '__main__':
@@ -24,14 +27,7 @@ if __name__ == '__main__':
 
     # Shell
     if 'shell' in sys.argv:
-        from boot import load_modules
-        load_modules()
         manager.add_command('shell', Shell())
-
-    # Db
-    if 'db' in sys.argv:
-        from boot import load_modules
-        load_modules()
 
     # Run manager
     manager.run()

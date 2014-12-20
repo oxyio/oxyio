@@ -5,10 +5,13 @@
 
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
-from pylibmc import Client as MemcacheClient
 from redis import StrictRedis
 
 import config
+# We shouldn't really import anything Oxypanel related in this file to avoid
+# circular imports everything imports from app, except the base meta, which is
+# required for creating the SQLAlchemy instance
+from models.meta import BaseMeta
 
 
 # App
@@ -16,9 +19,6 @@ import config
 app = Flask('oxypanel')
 app.debug = config.DEBUG
 app.secret_key = config.SECRET
-
-# (mem)Cache
-cache = MemcacheClient(config.CACHE_HOSTS, binary=True)
 
 # Redis
 host, port = config.REDIS['HOSTS'][0].split(':')
@@ -33,14 +33,19 @@ app.config['SQLALCHEMY_DATABASE_URI'] = '{0}://{1}:{2}@{3}:{4}/{5}'.format(
     config.DATABASE['PORT'],
     config.DATABASE['NAME']
 )
-db = SQLAlchemy(app)
+db = SQLAlchemy(app, base_metaclass=BaseMeta)
 
-# Maps module names => {views, models, config}
+# Map core names -> classes
 module_map = {}
-
-# Maps object <module>-<name>s => object class
 object_map = {}
-
+item_map = {}
+# There are only core websockets & tasks
+websocket_map = {
+    'core': {}
+}
+task_map = {
+    'core': {}
+}
 
 # Webserver
 if config.BOOTING == 'web':
@@ -56,12 +61,13 @@ if config.BOOTING == 'web':
     assets = Environment('', '')
     assets.debug = config.DEBUG
 
-    ws = GeventWebSocket(app)
+    # Websockets
+    websocket = GeventWebSocket(app, timeout=30) # setting any timeout seems to = infinite (def = 60s)
 
 
 # Tasks
 elif config.BOOTING == 'task':
-    from pytask import PyTask
+    from pytask import PyTask, Monitor
 
     # pytask
     task_app = PyTask(
@@ -70,6 +76,10 @@ elif config.BOOTING == 'task':
         end_queue=config.REDIS['END_QUEUE'],
         task_prefix=config.REDIS['TASK_PREFIX']
     )
+
+    # Add & prep monitor task
+    task_app.add_task(Monitor)
+    task_app.pre_start_task('pytask/monitor')
 
 
 # Manager
