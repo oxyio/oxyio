@@ -1,6 +1,8 @@
 # Oxypanel
 # File: util/tasks.py
 # Desc: manage tasks tasks via Redis
+#       this is done asynchronously via Redis pubsub (stop/update) or a queue (start)
+#       this means start/stop/update functions don't validate/return a True/False
 
 import json
 from uuid import uuid4
@@ -47,8 +49,7 @@ def _set_task(task_id, task_name, task_data):
 
 def start_task(task_id, task_name, task_data):
     '''Start a new task'''
-    # This implies a non-long-running task
-    # thus no option in start_upate
+    # task_id None implies a non-long-running task, thus no option in start_upate
     if task_id is None:
         task_id = str(uuid4())
 
@@ -73,7 +74,7 @@ def start_update_task(task_id, task_name, task_data):
         )
     # Otherwise, push it onto the queue
     else:
-        return start_task(task_id, task_name, task_data)
+        start_task(task_id, task_name, task_data)
 
 
 def stop_task(task_id):
