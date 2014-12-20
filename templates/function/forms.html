@@ -18,8 +18,8 @@
             {% if options.inline %}
                 <option value="">Filter by {{ field }}</option>
             {% endif %}
-            {% for enum in enums %}
-                <option value="{{ enum }}"{% if value == enum %} selected{% endif %}>{{ enum }}</option>
+            {% for enum, name in enums.iteritems() %}
+                <option value="{{ enum }}"{% if value == enum %} selected{% endif %}>{{ name }}</option>
             {% endfor %}
             {% if options.inline %}
                 <option value="">Show all</option>

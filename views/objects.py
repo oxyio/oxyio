@@ -6,9 +6,9 @@ from flask import abort, request, url_for
 from jinja2 import TemplateNotFound
 
 from app import app
+from util.data import get_object_class_or_404, get_objects
 from util.web.response import render_or_jsonify, redirect_or_jsonify
-from util.objects import get_object_class_or_404, get_objects
-from util.user import (
+from util.web.user import (
     get_own_objects,
     login_required, get_current_user,
     has_own_objects_permission, has_any_objects_permission,
@@ -18,13 +18,13 @@ from util.user import (
 
 def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
     # Apply any filters
-    for (field, _) in obj.Config.LIST_FIELDS:
+    for (field, _) in obj.LIST_FIELDS:
         if field in request.args and len(request.args[field]) > 0:
-            objects = objects.filter(getattr(obj, field)==request.args[field])
+            objects = objects.filter(getattr(obj, field).like('%{}%'.format(request.args[field])))
 
     # Name filter
     if 'name' in request.args and len(request.args['name']) > 0:
-        objects = objects.filter(obj.name.like('%{0}%'.format(request.args['name'])))
+        objects = objects.filter(obj.name.like('%{}%'.format(request.args['name'])))
 
     # Build filter form
     filter_form = obj().build_filter_form()
@@ -32,11 +32,11 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
     return render_or_jsonify('object/list.html',
         module_name=module_name,
         objects_type=objects_type,
-        object_name=obj.Config.NAME,
-        objects_name=obj.Config.NAMES,
-        list_fields=obj.Config.LIST_FIELDS,
-        list_relations=obj.Config.LIST_RELATIONS,
-        list_mrelations=obj.Config.LIST_MRELATIONS,
+        object_name=obj.TITLE,
+        objects_name=obj.TITLES,
+        list_fields=obj.LIST_FIELDS,
+        list_relations=obj.LIST_RELATIONS,
+        list_mrelations=obj.LIST_MRELATIONS,
         objects=objects,
         filter_form=filter_form,
         action=('own' if not is_all else 'all')
@@ -81,8 +81,8 @@ def view_add_objects(module_name, objects_type):
     data = {
         'add_form': add_form,
         'objects_type': objects_type,
-        'object_name': obj.Config.NAME,
-        'objects_name': obj.Config.NAMES,
+        'object_name': obj.TITLE,
+        'objects_name': obj.TITLES,
         'module_name': module_name
     }
 
@@ -122,10 +122,10 @@ def add_objects(module_name, object_type):
 
     # Redirect to it
     return redirect_or_jsonify(
-        url=url_for('view_object',
+        url=url_for('edit_object',
             module_name=module_name,
             object_type=object_type,
             object_id=new_object.id
         ),
-        success='{0} Added'.format(object_type)
+        success='{0} Added'.format(obj.TITLE)
     )

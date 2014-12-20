@@ -2,13 +2,13 @@
 # File: views/object.py
 # Desc: Flask routes for internal object calls
 
-from flask import abort, request, url_for
+from flask import abort, request
 from jinja2 import TemplateNotFound
 
 from app import app
 from models.user import User, UserGroup
-from util.user import has_object_permission, login_required, has_global_objects_permission
-from util.objects import get_object_or_404
+from util.data import get_object_or_404
+from util.web.user import has_object_permission, login_required, has_global_objects_permission
 from util.web.response import redirect_or_jsonify, render_or_jsonify
 
 
@@ -47,7 +47,7 @@ def view_edit_object(module_name, object_type, object_id):
     # Apply it's pre_view_edit function
     obj.pre_view_edit()
 
-    # Build it's form (respects Config.EDIT_FIELDS)
+    # Build it's form (respects.EDIT_FIELDS)
     edit_form = obj.build_form()
 
     data = {
@@ -64,7 +64,7 @@ def view_edit_object(module_name, object_type, object_id):
     except TemplateNotFound:
         return render_or_jsonify('object/edit.html', **data)
 
-@app.route('/<string:module_name>/<string:object_type>/<int:object_id>',
+@app.route('/<string:module_name>/<string:object_type>/<int:object_id>/edit',
     methods=['POST'])
 @login_required
 def edit_object(module_name, object_type, object_id):
@@ -87,14 +87,7 @@ def edit_object(module_name, object_type, object_id):
     obj.post_edit()
     for f in obj.hooks['post_edit']: f()
 
-    return redirect_or_jsonify(
-        url=url_for('view_edit_object',
-            module_name=module_name,
-            object_type=object_type,
-            object_id=object_id
-        ),
-        success='{0} updated'.format(obj.Config.NAME)
-    )
+    return redirect_or_jsonify(success='{0} updated'.format(obj.TITLE))
 
 
 @app.route('/<string:module_name>/<string:object_type>/<int:object_id>/delete', methods=['POST'])
@@ -167,7 +160,7 @@ def owner_object(module_name, object_type, object_id):
 
     # Save & redirect
     obj.save()
-    return redirect_or_jsonify(success='{0} owner changed'.format(object_type.title()))
+    return redirect_or_jsonify(success='{0} owner changed'.format(obj.TITLE))
 
 
 @app.route('/<string:module_name>/<string:object_type>/<int:object_id>/<string:func_name>', methods=['GET', 'POST'])
@@ -178,11 +171,11 @@ def custom_function_object(module_name, object_type, object_id, func_name):
 
     # Try to find the route
     func_name = '/{0}'.format(func_name)
-    route_i = [i for i, v in enumerate(obj.Config.ROUTES) if v[0] == func_name]
+    route_i = [i for i, v in enumerate(obj.ROUTES) if v[0] == func_name]
     if not route_i:
         return abort(404)
 
-    _, methods, func, permission = obj.Config.ROUTES[route_i[0]]
+    _, methods, func, permission = obj.ROUTES[route_i[0]]
 
     # Check permission
     if not has_object_permission(module_name, object_type, object_id, permission):

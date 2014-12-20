@@ -9,28 +9,28 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from app import db
 from util import log
-from util.objects import get_object_class
-from util.user import (
+from util.data import get_object_class
+from util.web.user import (
     get_own_objects, get_object,
     has_own_objects_permission, has_object_permission
 )
 
 
-# Map string types -> python types
+# Maps string types -> python types
 STRING_TO_PYTHON = {
     'int': int,
     'enum': set,
     'string': str
 }
 
-# Map column types -> string_type, python_type, col args
 def _column_to_python(column):
+    '''Map column types -> string_type, python_type, col args'''
     # Integers
     if isinstance(column, db.Integer):
         return ('int', int, None)
     # Enums (which almost match db.String)
     elif isinstance(column, db.Enum):
-        return ('enum', set, column.enums)
+        return ('enum', set, {value: value for value in column.enums})
     # Strings
     elif isinstance(column, db.String):
         return ('string', str, column.length)
@@ -39,20 +39,24 @@ def _column_to_python(column):
         log.warning('unknown column type: {0}'.format(type(column)))
 
 
-class BaseConfig:
-    NAME = ''
-    NAMES = ''
+class BaseItem(object):
+    _type = 'item'
+    id = db.Column(db.Integer, primary_key=True)
+
+class BaseObject(object):
+    _type = 'object'
+
+    ## Config section
+    NAME = TITLE = TITLES = None
 
     LIST_FIELDS = EDIT_FIELDS = []
     LIST_RELATIONS = EDIT_RELATIONS = []
     LIST_MRELATIONS = EDIT_MRELATIONS = []
-    LIST_OBJECTS = []
 
     ROUTES = []
 
-class BaseObject:
+    ## Database/struct section
     id = db.Column(db.Integer, primary_key=True)
-
     name = db.Column(db.String(64), nullable=False)
 
     @declared_attr
@@ -69,32 +73,41 @@ class BaseObject:
     def user_group(cls):
         return  db.relationship('UserGroup')
 
-    # For outputting to JSON in API-mode
+    ## Base functions
     def serialize(self):
+        '''For outputting to JSON in API-mode'''
         return {
             'id': self.id,
             'name': self.name
         }
 
-    # Turn device config fields into form tuples
+    def _col_to_data(self, field, options):
+        col = self.__table__.columns.get(field)
+        string_type, python_type, arg = _column_to_python(col.type)
+
+        # Strings can be overriden into dynamic/virtual enums
+        if python_type is str:
+            enums = options.get('enums', None)
+            if enums:
+                string_type = 'enum'
+                python_type = set
+                arg = enums
+
+        return string_type, python_type, arg
+
     def _config_to_form(self, fields):
+        '''Turn device config fields into form tuples'''
         form = []
         for (field, options) in fields:
-            override = options.get('override')
-            if override:
-                arg = getattr(self, override[1])()
-                form.append((override[0], field, arg, override[2]))
-            else:
-                col = self.__table__.columns.get(field)
-                string_type, _, arg = _column_to_python(col.type)
-                form.append((string_type, field, arg, options))
+            string_type, _, arg = self._col_to_data(field, options)
+            form.append((string_type, field, arg, options))
 
         return form
 
-    # Builds the list the form function in `forms.html` wants
     def build_form(self):
+        '''Builds an object edit/add form for macro in `function/forms.html`'''
         # Normal edit fields + name
-        form = self._config_to_form([('name', {})] + self.Config.EDIT_FIELDS)
+        form = self._config_to_form([('name', {})] + self.EDIT_FIELDS)
 
         # Check we have permission to edit the target relation or m(ulti)relation
         # append in similar format to _config_to_form
@@ -115,11 +128,11 @@ class BaseObject:
             ))
 
         # Related objects
-        for (module_name, objects_type, options) in self.Config.EDIT_RELATIONS:
+        for (module_name, objects_type, options) in self.EDIT_RELATIONS:
             _do_relation('relation', module_name, objects_type, '{0}_id'.format(objects_type), options)
 
         # Many/Multi-related objects
-        for (module_name, objects_type, objects_field, options) in self.Config.EDIT_MRELATIONS:
+        for (module_name, objects_type, objects_field, options) in self.EDIT_MRELATIONS:
             obj = get_object_class(module_name, objects_type)
             options['related_ids'] = [obj.id for obj in getattr(self, objects_field)]
             _do_relation('mrelation', module_name, objects_type, objects_field, options)
@@ -127,13 +140,16 @@ class BaseObject:
         return form
 
     def build_filter_form(self):
-        # List fields
-        form = self._config_to_form(self.Config.LIST_FIELDS)
+        '''Builds the objects filter/search form for macro in `function/forms.html`'''
+        # Uses just list fields
+        form = self._config_to_form(self.LIST_FIELDS)
         return form
 
-    # Check and apply self.Config.EDIT_FIELDS to self
-    # returns list of errors, or empty list for success
     def check_apply_edit_fields(self):
+        '''
+        Check and apply self.EDIT_FIELDS to self
+        returns list of errors, or empty list for success
+        '''
         # Check name
         name = request.form.get('name')
         if not name or len(name) <= 0:
@@ -141,17 +157,10 @@ class BaseObject:
 
         setattr(self, 'name', name)
 
-        for (field, options) in self.Config.EDIT_FIELDS:
+        for (field, options) in self.EDIT_FIELDS:
             data = request.form.get(field)
             if data is not None:
-                # Verify the field is valid
-                override = options.get('override')
-                if override:
-                    python_type = STRING_TO_PYTHON[override[0]]
-                    arg = getattr(self, override[1])()
-                else:
-                    col = self.__table__.columns.get(field)
-                    _, python_type, arg = _column_to_python(col.type)
+                _, python_type, arg = self._col_to_data(field, options)
 
                 if python_type is int:
                     try:
@@ -170,7 +179,7 @@ class BaseObject:
                 setattr(self, field, data)
 
         # Ensure related items exist
-        for (module_name, object_type, _) in self.Config.EDIT_RELATIONS:
+        for (module_name, object_type, _) in self.EDIT_RELATIONS:
             field_name = '{0}_id'.format(object_type)
             object_id = request.form.get(field_name)
 
@@ -192,7 +201,7 @@ class BaseObject:
             setattr(self, field_name, object_id)
 
         # Ensure mrelated items exist
-        for (module_name, object_type, field_name, _) in self.Config.EDIT_MRELATIONS:
+        for (module_name, object_type, field_name, _) in self.EDIT_MRELATIONS:
             object_ids = request.form.getlist(field_name)
 
             try:
@@ -242,11 +251,7 @@ class BaseObject:
         'post_add': []
     }
 
-    # Add the hooks
     @classmethod
     def add_hook(self, type, callback):
+        '''Add hooks to apply to all object sub-classes of this'''
         self.hooks[type].append(callback)
-
-
-class BaseItem:
-    id = db.Column(db.Integer, primary_key=True)

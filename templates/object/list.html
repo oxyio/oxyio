@@ -62,17 +62,21 @@
                         <a href="#">{{ object.user_group.name }}</a>
                     {% endif %}</td>
                 {% endif %}
-                {% for (field,_) in list_fields %}
+                {% for (field, options) in list_fields %}
                     <td>{% if object[field] %}
-                        {{ object[field] }}
+                        {% if options.enums %}
+                            {{ options.enums[object[field]] }}
+                        {% else %}
+                            {{ object[field] }}
+                        {% endif %}
                     {% else %}&mdash;{% endif %}</td>
                 {% endfor %}
-                {% for (module,field,_) in list_relations %}
+                {% for (module,field, options) in list_relations %}
                     <td>{% if object[field] %}
                         <a class="module-color" href="{{ url_for('view_object', module_name=module, object_type=field, object_id=object[field].id) }}">{{ object[field].name }}</a>
                     {% endif %}</td>
                 {% endfor %}
-                {% for (module,type, field,_) in list_mrelations %}
+                {% for (module,type, field, options) in list_mrelations %}
                     <td>{% for object in object[field] %}
                         <a class="module-color" href="{{ url_for('view_object', module_name=module, object_type=type, object_id=object.id) }}">{{ object.name }}</a>{% if not loop.last %}, {% endif %}
                     {% endfor %}</td>
