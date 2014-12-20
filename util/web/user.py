@@ -1,5 +1,5 @@
 # Oxypanel
-# File: util/user.py
+# File: util/web/user.py
 # Desc: user utils
 
 from functools import wraps
@@ -16,7 +16,7 @@ from app import app
 from models.user import User
 from models.permission import Permission
 
-from .objects import get_object, get_objects, get_object_class
+from ..data import get_object, get_objects, get_object_class
 
 
 # Warm request permission cache
@@ -25,8 +25,8 @@ def prepare_permissions_g():
     g.permissions = {}
 
 
-# Get owned objects
 def get_own_objects(module_name, objects_type, *filters):
+    '''Get objects of a certain type owned by the current user'''
     obj = get_object_class(module_name, objects_type)
     user = get_current_user()
 
@@ -36,25 +36,28 @@ def get_own_objects(module_name, objects_type, *filters):
     ), *filters)
 
 
-# Check a password
 def check_password(password, hashed):
+    '''Checks a password matches its hashed database value'''
     password = sha512(password).hexdigest()
     return hashpw(password, hashed) == hashed
 
 
-# Hash a password
 def hash_password(password):
+    '''Turn a password into a hash'''
     password = sha512(password).hexdigest()
     return hashpw(password, gensalt(config.BCRYPT_ROUNDS))
 
 
-# Get the current user object
 def get_current_user():
+    '''Get the current user object'''
     if hasattr(g, 'user'):
         return g.user
 
-    session_key = session.get('session_key')
-    user_id = session.get('user_id')
+    session_key = session.get('session_key', '')
+    try:
+        user_id = int(request.cookies.get('user_id'))
+    except (TypeError, ValueError):
+        user_id = None
 
     # We have int key and some session key
     if not isinstance(user_id, int) or len(session_key) <= 0:
@@ -69,8 +72,8 @@ def get_current_user():
     g.user = user
     return user
 
-# Check if client logged in as user
 def is_logged_in():
+    '''Test if the client is logged in as a user'''
     if hasattr(g, 'user'):
         return True
 
@@ -78,8 +81,8 @@ def is_logged_in():
         return True
 
 
-# Check a single permission
 def has_permission(permission):
+    '''Check a single permission'''
     if not get_current_user():
         return False
 
@@ -104,14 +107,13 @@ def has_permission(permission):
     g.permissions[cache_key] = True
     return True
 
-# Check multiple permissions
 def has_permissions(*args):
     if all(has_permission(permission) for permission in args):
         return True
 
 
-# Check permissions on single objects
 def has_object_permission(module_name, object_type, object_id, permission):
+    '''Check permissions for single objects'''
     # Permission for any object
     if has_permission('{0}Any{1}{2}'.format(permission, module_name, object_type)):
         return True
@@ -133,24 +135,27 @@ def has_object_permissions(module_name, object_type, object_id, *args):
         return True
 
 
-# Check permissions against all objects
 def has_own_objects_permission(module_name, objects_type, permission):
+    '''Check permissions against all owned objects_type'''
     return has_permission('{0}Own{1}{2}'.format(permission, module_name, objects_type))
 
 def has_any_objects_permission(module_name, objects_type, permission):
+    '''Check permissions against all objects_type'''
     return has_permission('{0}Any{1}{2}'.format(permission, module_name, objects_type))
 
 
-# Global object permission shortcuts (ie no Any or Own)
-# basically: Delete<Object> or Owner<Object>
 def has_global_objects_permission(module_name, objects_type, permission):
+    '''
+    Global object permission shortcuts (ie no Any or Own)
+    basically: Delete<Object> or Owner<Object>
+    '''
     # Permission for any object
     if has_permission('{0}{1}{2}'.format(permission, module_name, objects_type)):
         return True
 
 
-# Logged in decorator (redirects to login)
 def login_required(f):
+    '''Login decorator (redirects to login)'''
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not is_logged_in():
@@ -160,8 +165,8 @@ def login_required(f):
     return decorated_function
 
 
-# Permissions decorator (returns 403 error)
 def permissions_required(*permissions):
+    '''Permissions decorator (returns a 403)'''
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
