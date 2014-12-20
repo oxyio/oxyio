@@ -11,7 +11,7 @@ from flask import render_template, redirect, request, session, url_for
 import config
 from app import app, db
 from models.user import User
-from util.web.user import check_password, get_current_user, login_required, is_logged_in
+from util.web.user import check_password, get_current_user, login_required, is_logged_in, hash_password
 from util.web.response import redirect_or_jsonify
 from util.web.cookie import set_cookie, delete_cookie
 
@@ -104,6 +104,10 @@ def edit_profile():
 
     user.name = request.form['name']
     user.email = request.form['email']
+
+    # Password changed?
+    if 'new_password' in request.form and len(request.form['new_password']) > 0:
+        user.password = hash_password(request.form['new_password'])
 
     # Add, commit & redirect!
     db.session.add(user)

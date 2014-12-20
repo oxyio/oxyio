@@ -13,7 +13,11 @@
             </div>
 
             <div><label for="email">Email</label>
-                <input type="text" name="email" id="email" value="{{ current_user().email }}" />
+                <input type="text" name="email" id="email" value="{{ current_user().email }}" autocomplete="off" />
+            </div>
+
+            <div><label for="password">New Password</label>
+                <input type="password" name="new_password" id="password" autocomplete="off" />
             </div>
 
             <button type="submit" class="button green">Update Profile</button>
