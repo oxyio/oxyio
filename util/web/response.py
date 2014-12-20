@@ -1,5 +1,5 @@
 # Oxypanel
-# File: util/response.py
+# File: util/web/response.py
 # Desc: useful response fucntions
 
 from datetime import datetime
@@ -21,9 +21,11 @@ def log_request(response):
         'response_headers': response.headers,
         'response_status': response.status_code
     }
+    log
 
-    print log
-    print 'WRITE THIS INTO ES ^^^^^^^^^^^^^^'
+    #print log
+    #print 'WRITE THIS INTO ES ^^^^^^^^^^^^^^'
+    print 'write log to ES util/web/response.py'
     return response
 
 

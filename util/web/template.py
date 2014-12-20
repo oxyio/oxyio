@@ -17,7 +17,7 @@ from .flashes import get_flashed_request
 app.jinja_env.globals['get_flashed_request'] = get_flashed_request
 
 
-from ..user import (
+from .user import (
     get_current_user,
     has_permission, has_permissions,
     has_object_permission, has_object_permissions,
@@ -47,6 +47,7 @@ app.jinja_env.globals['prettify_relation'] = prettify_relation_field
 
 
 def modules_nav():
+    '''Generate dropdown for modules changing the active/current one'''
     # Active module link
     add_dashboard = False
     add_admin = True
@@ -68,7 +69,7 @@ def modules_nav():
             add_admin = False
         else:
             module = module_map[module_name]
-            name = module.config.NAME
+            name = module.config.TITLE
             color = module.config.COLOR
             icon = module.config.ICON
             url = url_for('{}.dashboard'.format(module_name))
@@ -85,7 +86,7 @@ def modules_nav():
         if name != module_name:
             color = module.config.COLOR
             icon = module.config.ICON
-            display_name = module.config.NAME
+            display_name = module.config.TITLE
 
             links.append('<li><a href="{0}" class="{1}"><span class="icon icon-{2}"></span> {3}</a></li>'.format(
                 url_for('{0}.dashboard'.format(name)),
@@ -105,7 +106,9 @@ def modules_nav():
 
 app.jinja_env.globals['modules_nav'] = modules_nav
 
+
 def module_nav():
+    '''Generate nav for current module (objects/etc)'''
     if not hasattr(g, 'module'):
         return ''
 
@@ -114,7 +117,7 @@ def module_nav():
     objects = object_map[g.module]
     links = []
     for object_name, object_class in objects.iteritems():
-        name = object_class.Config.NAMES
+        name = object_class.TITLES
         url = url_for('list_objects', module_name=g.module, objects_type=object_name)
         links.append('<li class="{0}"><a href="{1}">{2}</a></li>'.format(('active' if object_name==objects_type else ''), url, name))
 
@@ -123,8 +126,13 @@ def module_nav():
 app.jinja_env.globals['module_nav'] = module_nav
 
 
-# Sadly webassets has no way to auto-generate outfile names
+#
 def bundle_assets(*files, **options):
+    '''
+    Sadly webassets has no way to auto-generate outfile names
+    this allows dynamically building bundles, only needing to fiddle with template code
+    currently supports: JS, CSS(+Less)
+    '''
     extension = options.pop('extension', '')
     filters = options.pop('filters', [])
     # For css
