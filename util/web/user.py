@@ -54,10 +54,7 @@ def get_current_user():
         return g.user
 
     session_key = session.get('session_key', '')
-    try:
-        user_id = int(request.cookies.get('user_id'))
-    except (TypeError, ValueError):
-        user_id = None
+    user_id = session.get('user_id', None)
 
     # We have int key and some session key
     if not isinstance(user_id, int) or len(session_key) <= 0:

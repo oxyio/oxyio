@@ -13,7 +13,6 @@ from app import app, db
 from models.user import User
 from util.web.user import check_password, get_current_user, login_required, is_logged_in, hash_password
 from util.web.response import redirect_or_jsonify
-from util.web.cookie import set_cookie, delete_cookie
 
 
 @app.route('/logout', methods=['GET'])
@@ -23,7 +22,7 @@ def logout():
 
     # Remove session data
     session['session_key'] = None
-    delete_cookie('user_id')
+    session['user_id'] = None
 
     # Remove key in db
     user.session_key = None
@@ -52,8 +51,6 @@ def login():
         user = User.query.filter_by(email=email).one()
     except exc.NoResultFound:
         return redirect_or_jsonify(error='No user found')
-    except exc.exc.MultipleResultsFound:
-        return redirect_or_jsonify(error='More than one user found')
 
     # Check the password against the one in db
     if not check_password(password.encode('utf-8'), user.password.encode('utf-8')):
@@ -63,8 +60,7 @@ def login():
     # Generate session_key
     key = sha512('{0}{1}'.format(os.urandom(32), config.SECRET)).hexdigest()
     session['session_key'] = key # flasks "secure" sessions
-    # User ID is public (used in JS for websockets)
-    set_cookie('user_id', user.id, max_age=(3600 * 24 * 365 * 10))
+    session['user_id'] = user.id
 
     # Save user
     user.session_key = key

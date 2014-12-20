@@ -38,7 +38,7 @@ class User(db.Model):
         return 'http://www.gravatar.com/avatar/{0}?s=40&d=retro'.format(md5(self.email).hexdigest())
 
     def __init__(self, email, password, name=None):
-        from util.user import hash_password # prevent circular import
+        from util.web.user import hash_password # prevent circular import
 
         self.email = email
         self.password = hash_password(password)

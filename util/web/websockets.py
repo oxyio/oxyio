@@ -10,9 +10,8 @@ from util.web.user import get_current_user
 
 
 def make_websocket_request(websocket, websocket_data):
-    # Generate request key
+    '''Generates a websocket request and puts it into Redis for the websocket view to handle'''
     request_key = str(uuid4())
-
     user = get_current_user()
 
     # Add Redis hash set for websocket processor
