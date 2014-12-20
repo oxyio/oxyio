@@ -2,9 +2,24 @@
 
 {% block css %}
     {{ super() }}
+
     {{ assets(
-        'less/base.less', 'less/header.less', 'less/subheader.less',
+        'less/base.less',
+        'less/header.less',
+        'less/subheader.less',
         extension='css', filters='less,cssmin'
+    ) }}
+{% endblock %}
+
+{% block js %}
+    {{ super() }}
+
+    {{ assets(
+        'js/lib/underscore.min.js',
+        'js/select.js',
+        'js/cookie.js',
+        'js/websocket.js',
+        extension='js', filters='jsmin'
     ) }}
 {% endblock %}
 
