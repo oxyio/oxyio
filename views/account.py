@@ -11,8 +11,9 @@ from flask import render_template, redirect, request, session, url_for
 import config
 from app import app, db
 from models.user import User
-from util.user import check_password, get_current_user, login_required, is_logged_in
+from util.web.user import check_password, get_current_user, login_required, is_logged_in
 from util.web.response import redirect_or_jsonify
+from util.web.cookie import set_cookie, delete_cookie
 
 
 @app.route('/logout', methods=['GET'])
@@ -22,7 +23,7 @@ def logout():
 
     # Remove session data
     session['session_key'] = None
-    session['user_id'] = None
+    delete_cookie('user_id')
 
     # Remove key in db
     user.session_key = None
@@ -61,8 +62,9 @@ def login():
     # We're in, lets login the user
     # Generate session_key
     key = sha512('{0}{1}'.format(os.urandom(32), config.SECRET)).hexdigest()
-    session['session_key'] = key
-    session['user_id'] = user.id
+    session['session_key'] = key # flasks "secure" sessions
+    # User ID is public (used in JS for websockets)
+    set_cookie('user_id', user.id, max_age=(3600 * 24 * 365 * 10))
 
     # Save user
     user.session_key = key
