@@ -97,9 +97,8 @@ def edit_profile():
     ]:
         if field in request.form and len(request.form[field]) == 0:
             return redirect_or_jsonify(error='Invalid {0}'.format(field))
-
-    user.name = request.form['name']
-    user.email = request.form['email']
+        else:
+            setattr(user, field, request.form[field])
 
     # Password changed?
     if 'new_password' in request.form and len(request.form['new_password']) > 0:

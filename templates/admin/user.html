@@ -24,12 +24,15 @@
                 <span class="icon icon-arrow-down"></span></div>
             </div>
 
+            <div><label for="password">New Password (optional)</label>
+                <input type="password" name="new_password" id="password" autocomplete="off" />
+            </div>
+
             <div class="checkbox"><label for="is_keymaster" class="checkbox">Keymaster user (all permissions): </label>
                 <input type="checkbox"{% if user.is_keymaster %} checked{% endif %} name="is_keymaster" id="is_keymaster" />
             </div>
 
             <button class="button green">Update</button>
             <small><a href="{{ url_for('admin_users') }}">back to users &amp; groups</a></small>
-
             {{ csrf_input() }}
 {% endblock %}

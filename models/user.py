@@ -13,6 +13,9 @@ class UserGroup(db.Model):
 
     name = db.Column(db.String(64), nullable=False)
 
+    def __init__(self, name):
+        self.name = name
+
 
 class User(db.Model):
     __tablename__ = 'user'
@@ -37,11 +40,12 @@ class User(db.Model):
     def gravatar(self):
         return 'http://www.gravatar.com/avatar/{0}?s=40&d=retro'.format(md5(self.email).hexdigest())
 
-    def __init__(self, email, password, name=None):
-        from util.web.user import hash_password # prevent circular import
-
+    def __init__(self, email, password=None, name=None):
         self.email = email
-        self.password = hash_password(password)
+
+        if password is not None:
+            from util.web.user import hash_password # prevent circular import
+            self.password = hash_password(password)
 
         if name is None:
             self.name = email

@@ -6,19 +6,21 @@
         <div class="block twothird">
             <h2 class="top">Users</h2>
 
-            <form class="inline" action="" method="get">
-                <div><input type="text"  name="name" placeholder="Filter by name..." value="{{ request.args.name }}" /></div>
-                <div><div class="select"><select name="user_group_id">
-                    <option value="">Filter by group</option>
-                    {% for group in groups %}
-                        <option value="{{ group.id }}"{% if request.args.user_group_id and request.args.user_group_id|int == group.id %} selected{% endif %}>{{ group.name }}</option>
-                    {% endfor %}
-                    <option value="">&mdash;</option>
-                </select><span class="icon icon-arrow-down"></span></div></div>
-                <div><button type="submit" class="button small blue">Filter</button></div>
+            <div>
+                <form class="inline left" action="" method="get">
+                    <div><input type="text"  name="name" placeholder="Filter by name..." value="{{ request.args.name }}" /></div>
+                    <div><div class="select"><select name="user_group_id">
+                        <option value="">Filter by group</option>
+                        {% for group in groups %}
+                            <option value="{{ group.id }}"{% if request.args.user_group_id and request.args.user_group_id|int == group.id %} selected{% endif %}>{{ group.name }}</option>
+                        {% endfor %}
+                        <option value="">All groups</option>
+                    </select><span class="icon icon-arrow-down"></span></div></div>
+                    <div><button type="submit" class="button small blue">Filter</button></div>
+                </form>
 
-                <a class="button right green small">Add User</a>
-            </form>
+
+            </div>
 
             <table class="object-based">
                 <thead><tr>
@@ -42,8 +44,8 @@
                         <td>{{ user.user_group.name }}</td>
                         <td></td>
                         <td class="buttonset align-right">
-                            <a class="button small red" href="#">Delete</a>
                             <a class="button small blue" href="{{ url_for('admin_view_edit_user', user_id=user.id) }}">Edit</a>
+                            <a class="button small red" href="#">Delete</a>
                         </td>
                     </tr>{% endfor %}
                 </tbody>
@@ -51,22 +53,27 @@
         </div>
 
         <div class="block third">
-            <h2 class="top">Add new User Groups</h2>
-            <form action="{{ url_for('admin_add_group') }}" method="post">
-                {{ flashes.messages() }}
-                <div class="block base">
-                    <div class="threequarter block">
-                        <label for="name">Name</label>
-                        <input type="text" name="name" id="name" />
-                    </div>
-
-                    <div class="quarter block align-bottom">
-                        <button class="button green small">Add Group</button>
-                    </div>
+            <div class="block base">
+                <div class="block half">
+                    <h3>Add User</h3>
+                    <form class="inline" action="{{ url_for('admin_add_user') }}" method="post">
+                        <div><input type="text"  name="email" placeholder="New user email..." /></div>
+                        <button class="button green small">Add User</button>
+                        {{ csrf_input() }}
+                    </form>
                 </div>
 
-                {{ csrf_input() }}
-            </form>
+                <div class="block half">
+                    <h3>Add Group</h3>
+                    {{ flashes.messages() }}
+
+                    <form class="inline" action="{{ url_for('admin_add_group') }}" method="post">
+                        <div><input type="text" name="name" id="name" placeholder="New group name..." /></div>
+                        <button class="button green small">Add Group</button>
+                        {{ csrf_input() }}
+                    </form>
+                </div>
+            </div>
 
             <h2>User Groups</h2>
             <table class="object-based">
@@ -80,8 +87,8 @@
                         <td>{{ group.id }}</td>
                         <td>{{ group.name }}</td>
                         <td class="buttonset align-right">
-                            <a class="button small red" href="#">Delete</a>
                             <a class="button small blue" href="{{ url_for('admin_view_edit_group', group_id=group.id) }}">Edit</a>
+                            <a class="button small red" href="#">Delete</a>
                         </td>
                     </tr>{% endfor %}
                 </tbody>
