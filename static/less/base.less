@@ -47,6 +47,22 @@ section {
     max-width: 1400px;
 }
 
+.left {
+    float: left;
+}
+.right {
+    float: right;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Grid system */
 .block {
     display: inline-block;
     position: relative;
@@ -57,12 +73,21 @@ section {
         width: 100%;
     }
 
-    &.wide, &.half, &.third, &.twothird, &.quarter, &.threequarter {
+    &.auto, &.wide, &.half, &.third, &.twothird, &.quarter, &.threequarter {
         vertical-align: top;
         font-size: 16px;
 
         &.align-bottom {
             vertical-align: bottom;
+        }
+    }
+
+    &.auto {
+        min-width: 150px;
+        margin-right: 2%;
+
+        &:last-child {
+            margin-right: 0;
         }
     }
 
@@ -114,15 +139,4 @@ section {
             margin-right: 0;
         }
     }
-}
-
-.left {
-    float: left;
-}
-.right {
-    float: right;
-}
-
-.align-right {
-    text-align: right;
 }

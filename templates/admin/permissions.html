@@ -1,17 +1,60 @@
+{% import 'function/flashes.html' as flashes %}
 {% extends 'admin/base.html' %}
 
-{% block content %}
-    <h2>Setting permissions for {{ groups }}</h2>
-
-    {% for category, items in permissions.iteritems() %}
-        {% if category == 'core' %}
-            <h3>Core</h3>
-            {{ items }}
-        {% else %}
-            {% for object_name, items in items.iteritems() %}
-                <h3>{{ object_name|title }}</h3>
-                {{ items }}
-            {% endfor %}
-        {% endif %}
+{% macro permission_items(group_id, permissions) %}
+    {% for permission in permissions %}
+        <div class="checkbox">
+            <label for="group-{{ group_id }}-{{ permission }}">{{ permission }}</label>
+            <input
+                type="checkbox"
+                name="group-{{ group_id }}-{{ permission }}" id="group-{{ group_id }}-{{ permission }}"
+                {% if permission|lower in current_permissions[group_id] %}checked{% endif %}
+            />
+        </div>
     {% endfor %}
+{% endmacro %}
+
+{% block content %}
+    <h2>
+        Group Permissions for:
+        <span class="buttonset" data-tab-group="permissions">{% for group in groups %}
+            <a class="button{% if loop.index == 1 %} active{% endif %}" data-tab-link="group-{{ group.id }}">{{ group.name }}</a>
+        {% endfor %}</span>
+    </h2>
+
+    {{ flashes.messages() }}
+
+    <form data-tabs="permissions" method="post">
+        {% for group in groups %}
+            <div data-tab="group-{{ group.id }}" class="block wide {% if loop.index != 1 %} hidden{% endif %}">
+                {% for category, items in permissions.iteritems() %}
+                    {% if items is mapping %}
+                        {% for object_name, items in items.iteritems() %}
+                            <div class="block auto">
+                                <h2>{{ object_name|title }} <small><a class="right" data-select-all>toggle all</a></small></h2>
+                                {{ permission_items(group.id, items) }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="block auto">
+                            <h2>{{ category|title }} <small><a class="right" data-select-all>toggle all</a></small></h2>
+                            {{ permission_items(group.id, items) }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <button class="button big green">Update Permissions</button>
+        {{ csrf_input() }}
+    </form>
+{% endblock %}
+
+{% block js %}
+    {{ super() }}
+
+    {{ assets(
+        'js/admin/permissions.js',
+        extension='js', filters='jsmin'
+    ) }}
 {% endblock %}

@@ -11,8 +11,9 @@ button {
 }
 
 .buttonset {
+    font-size: 0;
+
     .button {
-        float: left;
         border-radius: 0;
 
         &:first-child {
@@ -20,19 +21,6 @@ button {
         }
         &:last-child {
             border-radius: 0 @borderRadius @borderRadius 0;
-        }
-    }
-
-    &.align-right {
-        .button {
-            float: right;
-
-            &:last-child {
-                border-radius: @borderRadius 0 0 @borderRadius;
-            }
-            &:first-child {
-                border-radius: 0 @borderRadius @borderRadius 0;
-            }
         }
     }
 }
@@ -53,11 +41,15 @@ button {
         padding: 5px;
     }
 
+    &:hover, &.active {
+        background: @darkGrey;
+    }
+
     &.green {
         color: @white;
         background: @green;
 
-        &:hover {
+        &:hover, &.active {
             background: @darkGreen;
         }
     }
@@ -66,7 +58,7 @@ button {
         color: @white;
         background: @red;
 
-        &:hover {
+        &:hover, &.active {
             background: @darkRed;
         }
     }
@@ -75,7 +67,7 @@ button {
         color: @white;
         background: @orange;
 
-        &:hover {
+        &:hover, &.active {
             background: @darkOrange;
         }
     }
@@ -84,7 +76,7 @@ button {
         color: @white;
         background: @blue;
 
-        &:hover {
+        &:hover, &.active {
             background: @darkBlue;
         }
     }
@@ -93,7 +85,7 @@ button {
         color: @white;
         background: @purple;
 
-        &:hover {
+        &:hover, &.active {
             background: @darkPurple;
         }
     }

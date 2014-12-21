@@ -5,16 +5,16 @@
 (function() {
     'use strict';
 
-    var DEFAULT = '',
+    var BLANK = '',
         selects = document.querySelectorAll('select');
 
     _.each(selects, function(select) {
         // If default, +empty
-        if(select.value == DEFAULT) select.classList.add('empty');
+        if(select.value == BLANK) select.classList.add('empty');
 
         // Handle changes
         select.addEventListener('change', function() {
-            if(select.value == DEFAULT) {
+            if(select.value == BLANK) {
                 select.classList.add('empty');
             } else {
                 select.classList.remove('empty');

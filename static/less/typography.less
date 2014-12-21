@@ -23,6 +23,7 @@ a {
     color: @black;
     text-decoration: none;
     border-bottom: 1px solid @darkGrey;
+    cursor: pointer;
 }
 a:hover {
     border-bottom-color: @darkestGrey;
@@ -31,6 +32,11 @@ a:hover {
 strong, h1, h2, h3, h4, h5 {
     font-family: @boldFont;
     font-weight: normal;
+
+    small a {
+        font-weight: normal;
+        font-family: @bodyFont;
+    }
 }
 h1 {
     font-size: 20px;

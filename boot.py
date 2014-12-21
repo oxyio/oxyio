@@ -109,7 +109,7 @@ if config.BOOTING == 'web':
     from flask import Blueprint
 
     # Import web utils
-    from util.web import route, template, csrf, cookie # noqa
+    from util.web import route, template, csrf # noqa
 
     # Import views
     from views import dashboard, account, error, object, objects, websocket # noqa

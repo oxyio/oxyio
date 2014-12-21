@@ -1,25 +1,7 @@
 {% extends 'admin/base.html' %}
 
 {% block content %}
-    <h2 class="top">Modules</h2>
-    <p>Loaded modules &amp; their objects.</p>
-    <table>
-        <thead><tr>
-            <th>Name</th>
-            <th>Objects</th>
-        </tr></thead>
-        <tbody>
-            {% for name, _ in modules.iteritems() %}<tr>
-                <td>{{ name }}</td>
-                <td>{% for object_name, object_class in objects[name].iteritems() %}
-                    {{ object_class.__name__ }} ({{ object_name }})
-                    {% if loop.index != objects[name]|length %}, {% endif %}
-                {% endfor %}</td>
-            </tr>{% endfor %}
-        </tbody>
-    </table>
-
-    <h2>Base Config</h2>
+    <h2 class="top">Base Config</h2>
     <p>Static configurables, as defined in <code>config.py</code>.</p>
     <table>
         <thead><tr>
@@ -29,13 +11,13 @@
         <tbody>
             {% for name, item in configs.iteritems() %}<tr>
                 <td>{{ name }}</td>
-                <td><code>{{ item }}</code></td>
+                <td><pre><code>{{ item|pprint }}</code></pre></td>
             </tr>{% endfor %}
         </tbody>
     </table>
 
     {% for module, confs in module_configs.iteritems() %}
-        <h2>{{ confs.NAME }} Config</h2>
+        <h2>{{ confs.TITLE }} Config</h2>
 
         <table>
         <thead><tr>
@@ -45,11 +27,29 @@
         <tbody>
             {% for name, item in confs.iteritems() %}<tr>
                 <td>{{ name }}</td>
-                <td><code>{{ item }}</code></td>
+                <td><pre><code>{{ item|pprint }}</code></pre></td>
             </tr>{% endfor %}
         </tbody>
     </table>
     {% endfor %}
+
+
+    <h2>Maps</h2>
+    <h3>Modules</h3>
+    <pre><code>{{ modules|pprint }}</code></pre>
+
+    <h3>Objects</h3>
+    <pre><code>{{ objects|pprint }}</code></pre>
+
+    <h3>Items</h3>
+    <pre><code>{{ items|pprint }}</code></pre>
+
+    <h3>Websockets</h3>
+    <pre><code>{{ websockets|pprint }}</code></pre>
+
+    <h3>Tasks</h3>
+    <pre><code>{{ tasks|pprint }}</code></pre>
+
 
     <h2>Routes</h2>
     <p>Table of all HTTP(S) routes.</p>
@@ -60,10 +60,10 @@
             <th>Methods</th>
         </tr></thead>
         <tbody>
-            {% for url, details in urls.iteritems() %}<tr>
+            {% for (url, endpoint, methods) in urls %}<tr>
                 <td>{{ url }}</td>
-                <td><code>{{ details.endpoint }}</code></td>
-                <td>{% for method in details.methods %}
+                <td><code>{{ endpoint }}</code></td>
+                <td>{% for method in methods %}
                     <code>{{ method }}</code>{% if not loop.last %}, {% endif %}
                 {% endfor %}</td>
             </tr>{% endfor %}

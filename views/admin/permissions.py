@@ -2,12 +2,13 @@
 # File: views/admin/permissions.py
 # Desc: view & edit system permissions
 
-from flask import g
+from flask import g, request
 
-from app import app, object_map
-from util.web.response import render_or_jsonify
-from util.user import permissions_required
+from app import app, db, object_map
 from models.user import UserGroup
+from models.permission import Permission
+from util.web.response import render_or_jsonify, redirect_or_jsonify
+from util.web.user import permissions_required
 
 
 @app.route('/admin/permissions', methods=['GET'])
@@ -25,12 +26,14 @@ def admin_permissions():
             'AdminLogs',
             'AdminDebug'
         ],
+        'modules': [],
         'objects': {}
     }
 
     # Object permissions
     for module_name, objects in object_map.iteritems():
         module_title = module_name.title()
+        permissions['modules'].append(module_title)
         for object_name, object_class in objects.iteritems():
             object_title = object_name.title()
 
@@ -45,8 +48,41 @@ def admin_permissions():
             ]
 
     groups = UserGroup.query.all()
+    all_permissions = Permission.query.all()
+
+    current_permissions = {
+        group.id: []
+        for group in groups
+    }
+    for permission in all_permissions:
+        current_permissions[permission.user_group_id].append(permission.name.lower())
+
     return render_or_jsonify('admin/permissions.html',
         action='permissions',
         permissions=permissions,
-        groups=groups
+        groups=groups,
+        current_permissions=current_permissions
     )
+
+
+@app.route('/admin/permissions', methods=['POST'])
+@permissions_required('Admin', 'AdminPermissions')
+def admin_edit_permissions():
+    g.module = 'admin'
+
+    # Delete all current permissions
+    Permission.query.delete()
+
+    # Create all new ones
+    for key, value in request.form.iteritems():
+        if key == 'csrf_token': continue
+        if not key.startswith('group-'): continue
+
+        _, group_id, permission = key.split('-')
+        permission = Permission(permission, group_id)
+        db.session.add(permission)
+
+    # Commit all the changes!
+    db.session.commit()
+
+    return redirect_or_jsonify(success='Permissions updated')
