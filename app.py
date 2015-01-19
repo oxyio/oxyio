@@ -6,11 +6,12 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from redis import StrictRedis
+from elasticsearch import Elasticsearch
 
 import config
 # We shouldn't really import anything Oxypanel related in this file to avoid
-# circular imports everything imports from app, except the base meta, which is
-# required for creating the SQLAlchemy instance
+# circular imports as everything imports from app, except the base meta, which
+# is required for creating the SQLAlchemy instance
 from models.meta import BaseMeta
 
 
@@ -20,20 +21,23 @@ app = Flask('oxypanel')
 app.debug = config.DEBUG
 app.secret_key = config.SECRET
 
-# Redis
-host, port = config.REDIS['HOSTS'][0].split(':')
-redis_client = StrictRedis(host, port=port)
-
 # Database
 app.config['SQLALCHEMY_DATABASE_URI'] = '{0}://{1}:{2}@{3}:{4}/{5}'.format(
-    config.DATABASE['DRIVER'],
-    config.DATABASE['USER'],
-    config.DATABASE['PASSWORD'],
-    config.DATABASE['HOST'],
-    config.DATABASE['PORT'],
-    config.DATABASE['NAME']
+    config.DATABASE_DRIVER,
+    config.DATABASE_USER,
+    config.DATABASE_PASSWORD,
+    config.DATABASE_HOST,
+    config.DATABASE_PORT,
+    config.DATABASE_NAME
 )
 db = SQLAlchemy(app, base_metaclass=BaseMeta)
+
+# Redis
+# TODO: support distributed Redis?
+redis_client = StrictRedis(*config.REDIS_NODES[0])
+
+# Elasticsearch
+es_client = Elasticsearch(['{0}:{1}'.format(*node) for node in config.ES_NODES])
 
 # Map core names -> classes
 module_map = {}
@@ -72,9 +76,9 @@ elif config.BOOTING == 'task':
     # pytask
     task_app = PyTask(
         redis_client,
-        new_queue=config.REDIS['NEW_QUEUE'],
-        end_queue=config.REDIS['END_QUEUE'],
-        task_prefix=config.REDIS['TASK_PREFIX']
+        new_queue=config.REDIS_NEW_QUEUE,
+        end_queue=config.REDIS_END_QUEUE,
+        task_prefix=config.REDIS_TASK_PREFIX
     )
 
     # Add & prep monitor task
