@@ -1,0 +1,47 @@
+.multiselect {
+    position: relative;
+    width: 100%;
+    border: 1px solid #D7D7D7;
+
+    ul {
+        padding: 0;
+        margin: 0;
+
+        input {
+            border: none;
+            width: 25px;
+            outline: none;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        &.multiselect-options {
+            position: absolute;
+            width: 100%;
+            margin-left: -1px;
+            border: 1px solid #D7D7D7;
+            border-width: 0 1px 1px 1px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        &.multiselect-active li {
+            display: inline-block;
+            background: #F7F7F7;
+            cursor: pointer;
+            margin: 2px;
+
+            &:hover {
+                background: #E7E7E7;
+            }
+
+            &:after {
+                content: 'x';
+                color: red;
+                padding-left: 10px;
+            }
+        }
+    }
+}
