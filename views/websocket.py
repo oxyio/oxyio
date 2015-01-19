@@ -2,6 +2,8 @@
 # File: views/webscoket.py
 # Desc: the websocket request handler
 
+import json
+
 from flask import request
 
 import config
@@ -22,11 +24,16 @@ def websocket_request(ws):
         if not request_key: return ws.send('INVALID_REQUEST_KEY')
 
         request_data = redis_client.hgetall(
-            '{0}{1}'.format(config.REDIS['WEBSOCKET_REQUEST_PREFIX'], request_key)
+            '{0}{1}'.format(config.REDIS_WEBSOCKET_PREFIX, request_key)
         )
 
+        if not request_data:
+            return ws.send('INVALID_REQUEST')
+
         if int(request_data['user_id']) != user.id:
-            logger.warning('Invalid user_id ({0}) w/valid websocket request: {1}'.format(user.id, request_key))
+            logger.warning('Invalid user_id ({0}) w/valid websocket request: {1}'.format(
+                user.id, request_key)
+            )
             return ws.send('INVALID_USER')
 
     # Looks like everything's OK, lets load the websocket in question
@@ -37,4 +44,5 @@ def websocket_request(ws):
         return ws.send('INVALID_WEBSOCKET')
 
     # Start the websocket!
-    websocket_class(request_data['websocket_data'], ws)
+    data = json.loads(request_data['websocket_data'])
+    websocket_class(data, ws)
