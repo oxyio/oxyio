@@ -3,6 +3,7 @@
     Desc: stylings for... forms!
 */
 
+@import 'colours.less';
 @import 'dimensions.less';
 
 
@@ -172,6 +173,22 @@ form {
         div.select span.icon {
             font-size: 13px;
             margin-top: -31px;
+        }
+    }
+
+    .multiselect {
+        border: none;
+        background: @grey;
+        padding: 5px;
+        border-radius: @borderRadius;
+
+        &:hover {
+            background: @inputHover;
+        }
+
+        input {
+            background: transparent;
+            padding: 0;
         }
     }
 }
