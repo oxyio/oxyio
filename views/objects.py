@@ -4,6 +4,7 @@
 
 from flask import abort, request, url_for
 from jinja2 import TemplateNotFound
+from sqlalchemy.orm import joinedload
 
 from app import app
 from util.data import get_object_class_or_404, get_objects
@@ -17,6 +18,12 @@ from util.web.user import (
 
 
 def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
+    # Join-load any multi relations
+    objects = objects.options(*[
+        joinedload(field)
+        for (_, _, field, _) in obj.LIST_MRELATIONS
+    ])
+
     # Apply any filters
     for (field, _) in obj.LIST_FIELDS:
         if field in request.args and len(request.args[field]) > 0:
@@ -92,7 +99,7 @@ def view_add_objects(module_name, objects_type):
     except TemplateNotFound:
         return render_or_jsonify('object/add.html', **data)
 
-@app.route('/<string:module_name>/<regex("[a-zA-Z_]+"):object_type>s', methods=['POST'])
+@app.route('/<string:module_name>/<regex("[a-zA-Z_]+"):object_type>s/add', methods=['POST'])
 @login_required
 def add_objects(module_name, object_type):
     # Check permission (can't use decorator as need object_type)
