@@ -9,7 +9,6 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from app import db
 from util import log
-from util.data import get_object_class
 from util.web.user import (
     get_own_objects, get_object,
     has_own_objects_permission, has_object_permission
@@ -133,7 +132,6 @@ class BaseObject(object):
 
         # Many/Multi-related objects
         for (module_name, objects_type, objects_field, options) in self.EDIT_MRELATIONS:
-            obj = get_object_class(module_name, objects_type)
             options['related_ids'] = [obj.id for obj in getattr(self, objects_field)]
             _do_relation('mrelation', module_name, objects_type, objects_field, options)
 
@@ -148,7 +146,7 @@ class BaseObject(object):
     def check_apply_edit_fields(self):
         '''
         Check and apply self.EDIT_FIELDS to self
-        returns list of errors, or empty list for success
+        returns: status boolean, error or None
         '''
         # Check name
         name = request.form.get('name')
@@ -214,7 +212,7 @@ class BaseObject(object):
                 return False, 'You do not have permission to set {0} => {1} #s: {2}'.format(field_name, object_type, object_ids)
 
             # Set the objects
-            new_objects = [get_object(module_name, object_type, object_id) for object_id in object_ids if object_id > 0]
+            new_objects = [get_object(module_name, object_type, obj_id) for obj_id in object_ids if obj_id > 0]
             setattr(self, field_name, new_objects)
 
         return True, None
