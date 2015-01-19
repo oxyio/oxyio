@@ -43,7 +43,6 @@ def admin_users():
         groups=groups
     )
 
-
 @app.route('/admin/users/<int:user_id>/edit', methods=['GET'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_view_edit_user(user_id):
@@ -56,7 +55,6 @@ def admin_view_edit_user(user_id):
         user=user,
         groups=groups
     )
-
 
 @app.route('/admin/users/<int:user_id>/edit', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
@@ -87,7 +85,6 @@ def admin_edit_user(user_id):
     db.session.commit()
     return redirect_or_jsonify(success='User updated')
 
-
 @app.route('/admin/users', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_add_user():
@@ -100,7 +97,6 @@ def admin_add_user():
     db.session.commit()
 
     return redirect_or_jsonify(url_for('admin_edit_user', user_id=user.id), success='User added')
-
 
 @app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
@@ -131,7 +127,6 @@ def admin_add_group():
         success='Group added'
     )
 
-
 @app.route('/admin/groups/<int:group_id>/edit', methods=['GET'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_view_edit_group(group_id):
@@ -142,7 +137,6 @@ def admin_view_edit_group(group_id):
         action='users',
         group=group
     )
-
 
 @app.route('/admin/groups/<int:group_id>/edit', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
@@ -157,7 +151,6 @@ def admin_edit_group(group_id):
     db.session.add(group)
     db.session.commit()
     return redirect_or_jsonify(success='Group updated')
-
 
 @app.route('/admin/groups/<int:user_group_id>/delete', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
