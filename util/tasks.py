@@ -22,16 +22,16 @@ def _build_task(task_name, task_data):
 
 def get_task_ids():
     '''Get a list of active task_ids'''
-    return redis_client.sgetall(config.REDIS['TASK_SET'])
+    return redis_client.sgetall(config.REDIS_TASK_SET)
 
 
 def get_task(task_id):
     '''Get a task & it's relevant data'''
-    task_exists = redis_client.sismember(config.REDIS['TASK_SET'], task_id)
+    task_exists = redis_client.sismember(config.REDIS_TASK_SET, task_id)
 
     if task_exists:
         # Get the task
-        task = redis_client.hgetall('{0}{1}'.format(config.REDIS['TASK_PREFIX'], task_id))
+        task = redis_client.hgetall('{0}{1}'.format(config.REDIS_TASK_PREFIX, task_id))
         task.update({
             'id': task_id
         })
@@ -42,7 +42,7 @@ def get_task(task_id):
 def _set_task(task_id, task_name, task_data):
     # Write task data
     redis_client.hmset(
-        '{0}{1}'.format(config.REDIS['TASK_PREFIX'], task_id),
+        '{0}{1}'.format(config.REDIS_TASK_PREFIX, task_id),
         _build_task(task_name, task_data)
     )
 
@@ -54,14 +54,14 @@ def start_task(task_id, task_name, task_data):
         task_id = str(uuid4())
 
     _set_task(task_id, task_name, task_data)
-    redis_client.lpush(config.REDIS['NEW_QUEUE'], task_id)
+    redis_client.lpush(config.REDIS_NEW_QUEUE, task_id)
 
     return task_id
 
 
 def start_update_task(task_id, task_name, task_data):
     '''Start or update an existing task'''
-    task_exists = redis_client.sismember(config.REDIS['TASK_SET'], task_id)
+    task_exists = redis_client.sismember(config.REDIS_TASK_SET, task_id)
 
     # If the task is active, send reload command
     if task_exists:
@@ -69,7 +69,7 @@ def start_update_task(task_id, task_name, task_data):
         _set_task(task_id, task_name, task_data)
 
         redis_client.publish(
-            '{0}{1}-control'.format(config.REDIS['TASK_PREFIX'], task_id),
+            '{0}{1}-control'.format(config.REDIS_TASK_PREFIX, task_id),
             'reload'
         )
     # Otherwise, push it onto the queue
@@ -80,6 +80,6 @@ def start_update_task(task_id, task_name, task_data):
 def stop_task(task_id):
     '''Stop a task'''
     redis_client.publish(
-        '{0}{1}-control'.format(config.REDIS['TASK_PREFIX'], task_id),
+        '{0}{1}-control'.format(config.REDIS_TASK_PREFIX, task_id),
         'stop'
     )
