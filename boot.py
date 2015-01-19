@@ -113,7 +113,7 @@ if config.BOOTING == 'web':
 
     # Import views
     from views import dashboard, account, error, object, objects, websocket # noqa
-    from views.admin import debug, logs, permissions, settings, users, dashboard # noqa
+    from views.admin import debug, logs, permissions, settings, users, dashboard, tasks # noqa
 
     # Make module blueprints
     for name, module in module_map.iteritems():
