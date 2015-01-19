@@ -5,5 +5,7 @@
 (function() {
     'use strict';
 
-
+    window.getWebSocket = function(request_key) {
+        return new WebSocket('ws://' + window.location.host + '/websocket?key=' + request_key);
+    };
 })();
