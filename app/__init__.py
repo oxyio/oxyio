@@ -8,7 +8,13 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from redis import StrictRedis
 from elasticsearch import Elasticsearch
 
+# Setup config with defaults
 import config
+from . import default_config
+for key in [name for name in dir(default_config) if name.isupper()]:
+    if not hasattr(config, key):
+        setattr(config, key, getattr(default_config, key))
+
 # We shouldn't really import anything Oxypanel related in this file to avoid
 # circular imports as everything imports from app, except the base meta, which
 # is required for creating the SQLAlchemy instance
@@ -78,7 +84,8 @@ elif config.BOOTING == 'task':
         redis_client,
         new_queue=config.REDIS_NEW_QUEUE,
         end_queue=config.REDIS_END_QUEUE,
-        task_prefix=config.REDIS_TASK_PREFIX
+        task_prefix=config.REDIS_TASK_PREFIX,
+        cleanup_tasks=config.DEBUG
     )
 
     # Add & prep monitor task
