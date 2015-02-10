@@ -1,13 +1,11 @@
-# Still hoping Apple will stop this one day
 .DS_Store
-# Still hoping Python will stop this one day
 *.pyc
 
 # Secret configs!
 config.py
 
 # Vagrant
-.vagrant
+.vagrant/
 
 # Node
 node_modules/
@@ -17,6 +15,7 @@ migrations/versions/*
 !migrations/versions/.keepme
 
 # Asset cache
+.webassets-cache/
 static/cache/
 
 # Modules
