@@ -14,9 +14,8 @@ node_modules/
 migrations/versions/*
 !migrations/versions/.keepme
 
-# Asset cache
-.webassets-cache/
-static/cache/
+# Webpack assets
+oxyio/static/dist/
 
 # Modules
 modules/*
