@@ -8,11 +8,16 @@ from jinja2 import TemplateNotFound
 from ..app import web_app
 from ..models.user import User, UserGroup
 from ..util.data import get_object_or_404
-from ..util.web.user import has_object_permission, login_required, has_global_objects_permission
 from ..util.web.response import redirect_or_jsonify, render_or_jsonify
+from ..util.web.user import (
+    has_object_permission, login_required, has_global_objects_permission
+)
 
 
-@web_app.route('/<string:module_name>/<string:object_type>/<int:object_id>', methods=['GET'])
+@web_app.route(
+    '/<string:module_name>/<string:object_type>/<int:object_id>',
+    methods=['GET']
+)
 @login_required
 def view_object(module_name, object_type, object_id):
     # Check permission (can't use decorator as need object_type)
@@ -34,7 +39,10 @@ def view_object(module_name, object_type, object_id):
     )
 
 
-@web_app.route('/<string:module_name>/<string:object_type>/<int:object_id>/edit', methods=['GET'])
+@web_app.route(
+    '/<string:module_name>/<string:object_type>/<int:object_id>/edit',
+    methods=['GET']
+)
 @login_required
 def view_edit_object(module_name, object_type, object_id):
     # Check permission (can't use decorator as need object_type)
@@ -64,8 +72,11 @@ def view_edit_object(module_name, object_type, object_id):
     except TemplateNotFound:
         return render_or_jsonify('object/edit.html', **data)
 
-@web_app.route('/<string:module_name>/<string:object_type>/<int:object_id>/edit',
-    methods=['POST'])
+
+@web_app.route(
+    '/<string:module_name>/<string:object_type>/<int:object_id>/edit',
+    methods=['POST']
+)
 @login_required
 def edit_object(module_name, object_type, object_id):
     # Check permission
@@ -91,7 +102,10 @@ def edit_object(module_name, object_type, object_id):
     return redirect_or_jsonify(success='{0} updated'.format(obj.TITLE))
 
 
-@web_app.route('/<string:module_name>/<string:object_type>/<int:object_id>/delete', methods=['POST'])
+@web_app.route(
+    '/<string:module_name>/<string:object_type>/<int:object_id>/delete',
+    methods=['POST']
+)
 @login_required
 def delete_object(module_name, object_type, object_id):
     # Check permission
@@ -115,7 +129,10 @@ def delete_object(module_name, object_type, object_id):
         hook()
 
 
-@web_app.route('/<string:module_name>/<string:object_type>/<int:object_id>/owner', methods=['GET'])
+@web_app.route(
+    '/<string:module_name>/<string:object_type>/<int:object_id>/owner',
+    methods=['GET']
+)
 @login_required
 def view_owner_object(module_name, object_type, object_id):
     # Check permission (can't use decorator as need object_type)
@@ -139,7 +156,11 @@ def view_owner_object(module_name, object_type, object_id):
         action='owner'
     )
 
-@web_app.route('/<string:module_name>/<string:object_type>/<int:object_id>/owner', methods=['POST'])
+
+@web_app.route(
+    '/<string:module_name>/<string:object_type>/<int:object_id>/owner',
+    methods=['POST']
+)
 @login_required
 def owner_object(module_name, object_type, object_id):
     # Check permission
@@ -165,7 +186,10 @@ def owner_object(module_name, object_type, object_id):
     return redirect_or_jsonify(success='{0} owner changed'.format(obj.TITLE))
 
 
-@web_app.route('/<string:module_name>/<string:object_type>/<int:object_id>/<string:func_name>', methods=['GET', 'POST'])
+@web_app.route(
+    '/<string:module_name>/<string:object_type>/<int:object_id>/<string:func_name>',
+    methods=['GET', 'POST']
+)
 @login_required
 def custom_function_object(module_name, object_type, object_id, func_name):
     # Get object from module

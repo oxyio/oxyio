@@ -49,7 +49,11 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
         action=('own' if not is_all else 'all')
     )
 
-@web_app.route('/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/all', methods=['GET'])
+
+@web_app.route(
+    '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/all',
+    methods=['GET']
+)
 @login_required
 def list_all_objects(module_name, objects_type):
     if not has_any_objects_permission(module_name, objects_type, 'view'):
@@ -61,7 +65,11 @@ def list_all_objects(module_name, objects_type):
     objects = get_objects(module_name, objects_type)
     return _do_list_objects(module_name, objects_type, obj, objects, is_all=True)
 
-@web_app.route('/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s', methods=['GET'])
+
+@web_app.route(
+    '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s',
+    methods=['GET']
+)
 @login_required
 def list_objects(module_name, objects_type):
     if not has_own_objects_permission(module_name, objects_type, 'view'):
@@ -72,7 +80,10 @@ def list_objects(module_name, objects_type):
     return _do_list_objects(module_name, objects_type, obj, objects)
 
 
-@web_app.route('/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/add', methods=['GET'])
+@web_app.route(
+    '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/add',
+    methods=['GET']
+)
 @login_required
 def view_add_objects(module_name, objects_type):
     # Check permission (can't use decorator as need object_type)
@@ -99,7 +110,11 @@ def view_add_objects(module_name, objects_type):
     except TemplateNotFound:
         return render_or_jsonify('object/add.html', **data)
 
-@web_app.route('/<string:module_name>/<regex("[a-zA-Z_]+"):object_type>s/add', methods=['POST'])
+
+@web_app.route(
+    '/<string:module_name>/<regex("[a-zA-Z_]+"):object_type>s/add',
+    methods=['POST']
+)
 @login_required
 def add_objects(module_name, object_type):
     # Check permission (can't use decorator as need object_type)
