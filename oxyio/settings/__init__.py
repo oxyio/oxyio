@@ -4,6 +4,7 @@
 
 import sys
 
+
 from . import defaults
 
 
@@ -13,7 +14,9 @@ class OxyioSettings(object):
         self.apply_attrs(defaults)
 
     def load_module(self, name):
+        # The sys.modules hack below breaks the import
         from importlib import import_module
+
         settings_module = import_module(name)
         self.apply_attrs(settings_module)
 
