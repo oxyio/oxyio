@@ -1,34 +1,32 @@
-# Web
-uwsgi==2.0.6
-gevent==1.0.1
+# Server
+#uwsgi==2.0.10
+#gevent==1.0.1
 flask==0.10.1
-flask-uwsgi-websocket==0.2.9
+flask-uwsgi-websocket==0.2.10
 flask-debugtoolbar==0.9.0
-
-# Assets
-flask-assets==0.10
-jsmin==2.0.11
-cssmin==0.2.0
-
-# Manage
 flask-script==2.0.5
-flask-migrate==1.2.0
 
 # Database
 mysql-python==1.2.5
-# This is a pending PR (https://github.com/mitsuhiko/flask-sqlalchemy/pull/240) to allow the passing of custom
-# base meta classes into the SQLAlchemy instance Flask-SQLAlchemy creates
-#flask-sqlalchemy==1.0
-git+git://github.com/Fizzadar/flask-sqlalchemy.git@optional-metaclass
+flask-sqlalchemy==2.0
+
+# Migrations
+alembic==0.7.4
+flask-migrate==1.3.0
 
 # Hashing
 bcrypt==1.0.2
 
-# Redis
+# Services
 redis==2.10.3
-
-# Elasticsearch
-elasticsearch==1.3.0
+requests==2.7.0
+paramiko==1.15.2
+elasticsearch==1.4.0
+elasticmapping==1.2
+elasticquery==1.4
 
 # Logging
 coloredlogs==0.5
+
+# Debugging
+ipdb

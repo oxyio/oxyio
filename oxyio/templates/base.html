@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+    <title>
+        {% block title %}{% endblock %}
+        {% if self.title() %} | {% endif %}
+        Oxypanel
+    </title>
+    {% block meta %}{% endblock %}
+
+    {% block css %}
+        <link rel="stylesheet" href="/static/font/ptsans/font.css" />
+        <link rel="stylesheet" href="/static/font/fontawesome/font.css" />
+        {{ webpack_css('base') }}
+    {% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+
+    {% block js %}
+        {{ webpack_js('commons') }}
+        {{ webpack_js('base') }}
+    {% endblock %}
+</body>

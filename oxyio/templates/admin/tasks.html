@@ -1,0 +1,6 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    {% set websocket_key = get_flashed_request('task_admin') %}
+    {{ websocket_key }}
+{% endblock %}

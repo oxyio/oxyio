@@ -1,0 +1,76 @@
+/*  Oxypanel
+    File: webpacks/base/shared/typography.less
+    Desc: lovely typography
+*/
+
+@import './colours.less';
+
+
+@bodyFont: 'PTSansRegular';
+@boldFont: 'PTSansBold';
+@italicFont: 'PTSansItalic';
+@boldItalicFont: 'PTSansBoldItalic';
+
+@fontGrey: lighten(@black, 50%);
+@fontDarkGrey: lighten(@black, 30%);
+
+
+body {
+    margin: 0;
+    font-size: 16px;
+    font-family: @bodyFont;
+    color: @black;
+}
+
+a {
+    color: @black;
+    text-decoration: none;
+    border-bottom: 1px solid @darkGrey;
+    cursor: pointer;
+}
+a:hover {
+    border-bottom-color: @darkestGrey;
+}
+
+strong, h1, h2, h3, h4, h5 {
+    font-family: @boldFont;
+    font-weight: normal;
+
+    small a {
+        font-weight: normal;
+        font-family: @bodyFont;
+    }
+}
+h1 {
+    font-size: 20px;
+}
+h2 {
+    font-size: 19px;
+}
+h3 {
+    font-size: 16px;
+}
+
+
+small {
+    font-size: 14px;
+    color: @fontGrey;
+
+    a {
+        color: @fontGrey;
+        border-bottom: 1px solid @darkGrey;
+
+        &:hover {
+            color: @fontDarkGrey;
+            border-bottom: 1px solid @darkerGrey;
+        }
+    }
+}
+
+code {
+    font-family: Courier New, Courier;
+    font-size: 14px;
+    line-height: 20px;
+    background: #FFFECC;
+    padding: 2px;
+}

@@ -1,0 +1,28 @@
+{
+  "name": "Oxypanel-core",
+  "version": "0.0.0",
+  "description": "Oxypanel's core",
+  "author": "Oxygem",
+  "homepage": "https://github.com/Oxypanel/core",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Oxypanel/core.git"
+  },
+  "devDependencies": {
+    "css-loader": "0.9.1",
+    "extract-text-webpack-plugin": "0.3.8",
+    "jsx-loader": "0.13.2",
+    "less-loader": "2.0.0",
+    "style-loader": "0.8.3",
+    "webpack": "1.5.3",
+    "webpack-dev-server": "1.7.0"
+  },
+  "dependencies": {
+    "dygraphs": "1.1.0",
+    "lodash": "3.3.1",
+    "metrics-graphics": "2.2.1",
+    "react": "0.13.1",
+    "react-animate": "1.2.3",
+    "velocity-animate": "1.2.2"
+  }
+}

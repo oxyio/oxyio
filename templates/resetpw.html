@@ -1,9 +1,0 @@
-{% extends 'login.html' %}
-
-{% block title %}Password Reset{% endblock %}
-
-{% block login_inputs %}
-    <input type="text" name="email" placeholder="email" />
-    <button type="submit" class="button green"><span class="icon icon-envelope"></span> Reset Password</button>
-    <small><a href="{{ url_for('login') }}">back to login</a></small>
-{% endblock %}

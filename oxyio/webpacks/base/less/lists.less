@@ -1,0 +1,41 @@
+/*
+    Oxypanel
+    File: webpacks/base/less/lists.less
+    Desc: shared styles for ordered and unordered lists
+*/
+
+@import './shared/colours.less';
+@import './shared/dimensions.less';
+
+
+ul.tablinks {
+    margin: 0;
+    padding: 0;
+
+    li {
+        list-style: none;
+
+        a {
+            float: left;
+            border: none;
+            padding: 5px;
+            width: 100%;
+            background: @grey;
+
+            &:hover {
+                background: @darkGrey;
+            }
+        }
+
+        &:first-child a {
+            border-radius: @borderRadius @borderRadius 0 0;
+        }
+        &:last-child a {
+            border-radius: 0 0 @borderRadius @borderRadius;
+        }
+
+        &.active a {
+            background: @darkGrey;
+        }
+    }
+}

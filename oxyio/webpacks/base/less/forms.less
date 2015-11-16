@@ -1,0 +1,210 @@
+/*  Oxypanel
+    File: forms.less
+    Desc: stylings for... forms!
+*/
+
+@import './shared/colours.less';
+@import './shared/dimensions.less';
+@import './shared/typography';
+
+
+form {
+    width: 100%;
+    margin: 0;
+
+    h2 {
+        margin-top: 20px;
+    }
+
+    button {
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+
+    label {
+        color: @fontGrey;
+        font-family: Verdana;
+        font-size: 12px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        background: @grey;
+        border: none;
+        font-family: @bodyFont;
+        font-size: 18px;
+        margin: 0 0 10px 0;
+        padding: 8px;
+        border-radius: @borderRadius;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        &:hover, &[type=text]:focus {
+            background: @inputHover;
+        }
+    }
+
+    select {
+        cursor: pointer;
+
+        &.empty {
+            color: @fontGrey;
+        }
+    }
+
+    .checkbox, .radio {
+        margin-bottom: 20px;
+
+        label {
+            cursor: pointer;
+        }
+
+        input {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            vertical-align: bottom;
+            cursor: pointer;
+
+            &:before {
+                font-family: FontAwesome;
+                content: '\f00d';
+                font-size: 16px;
+                margin-top: -7px;
+                margin-left: -5px;
+                position: absolute;
+            }
+
+            &:checked:before {
+                content: '\f00c';
+                margin-left: -6px;
+            }
+        }
+
+        &.radio {
+            input {
+                border-radius: 0;
+
+                &:before {
+                    content: '';
+                }
+
+                &:checked:before {
+                    content: '\f111';
+                    font-size: 12px;
+                    margin-left: -3px;
+                    margin-top: -3px;
+                }
+            }
+
+            div:first-child input {
+                border-radius: @borderRadius @borderRadius 0 0;
+            }
+            div:last-child input {
+                border-radius: 0 0 @borderRadius @borderRadius;
+            }
+        }
+    }
+
+    div.select {
+        span.icon {
+            float: right;
+            margin-top: -36px;
+            margin-right: 10px;
+            position: relative;
+            z-index: 2;
+            color: @darkerGrey;
+            pointer-events: none;
+        }
+
+        &:hover {
+            select {
+                background: @inputHover;
+
+                &:disabled {
+                    background: @grey;
+                }
+            }
+
+            span.icon {
+                color: @black;
+            }
+        }
+
+        &.multi {
+            select {
+                height: auto;
+            }
+
+            option {
+                opacity: 0.6;
+
+                &:checked {
+                    opacity: 1;
+                }
+            }
+
+            span.icon {
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+        }
+    }
+
+    .align-bottom {
+        .button, input, select, textarea, .checkbox {
+            margin-bottom: 10px;
+        }
+    }
+    .align-bottom-last {
+        .button, input, select, textarea, .checkbox {
+            margin-bottom: 0;
+        }
+    }
+
+    &.inline {
+        width: auto;
+
+        label {
+            display: none;
+        }
+
+        div, input, select, textarea {
+            float: left;
+            font-size: 16px;
+        }
+        input {
+            width: auto;
+        }
+        input, select, textarea {
+            padding: 5px;
+        }
+        div {
+            margin-right: 5px;
+        }
+
+        div.select span.icon {
+            font-size: 13px;
+            margin-top: -31px;
+        }
+    }
+
+    .multiselect {
+        border: none;
+        background: @grey;
+        padding: 5px;
+        border-radius: @borderRadius;
+
+        &:hover {
+            background: @inputHover;
+        }
+
+        input {
+            background: transparent;
+            padding: 0;
+        }
+    }
+}

@@ -1,0 +1,64 @@
+/*  Oxypanel
+    File: subheader.less
+    Desc: subheader area & inner contents
+*/
+
+@import './shared/colours.less';
+@import './shared/typography.less';
+
+
+section#subheader {
+    background: darken(@grey, 5%);
+
+    a {
+        border: none;
+    }
+
+    h1 {
+        font-family: @bodyFont;
+        float: left;
+        margin: 16px 0 14px 0;
+    }
+
+    ul#links {
+        float: right;
+        padding: 0;
+        list-style: none;
+        margin: 16px 0 0 0;
+        font-size: 18px;
+
+        li {
+            float: left;
+            margin-left: 20px;
+
+            a {
+                color: @fontGrey;
+
+                &.active, &:hover {
+                    color: @black;
+                }
+
+                &.red {
+                    color: @lightRed;
+
+                    &.active, &:hover {
+                        color: @darkRed;
+                    }
+                }
+            }
+        }
+    }
+
+    form.inline {
+        float: left;
+        margin: 14px 0 0 20px;
+
+        input, select {
+            background: @white;
+
+            &:hover, &:focus {
+                background: @inputHover;
+            }
+        }
+    }
+}

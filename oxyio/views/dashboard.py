@@ -1,0 +1,14 @@
+# oxy.io
+# File: views/dashboard.py
+# Desc: the global dashboard view
+
+from flask import render_template
+
+from ..app import web_app
+from ..util.web.user import login_required
+
+
+@web_app.route('/', methods=['GET'])
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
