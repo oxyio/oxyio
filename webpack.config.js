@@ -6,10 +6,10 @@
 
 'use strict';
 
-var fs = require('fs'),
-    _ = require('lodash'),
-    webpack = require('webpack'),
-    ExtractTextPlugin = require('extract-text-webpack-plugin');
+var fs = require('fs');
+var _ = require('lodash');
+var webpack = require('webpack');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 
 // Basic entries
@@ -53,8 +53,8 @@ _.each(files, function(moduleName, i) {
 
         // Import each folders config
         _.each(moduleWebpacks, function(webpackName) {
-            var dir = './modules/' + moduleName + '/webpacks/' + webpackName + '/',
-                name = moduleName + '/' + webpackName;
+            var dir = './modules/' + moduleName + '/webpacks/' + webpackName + '/';
+            var name = moduleName + '/' + webpackName;
 
             entries[name] = dir + 'main.js';
             commons.push(name);
@@ -95,7 +95,7 @@ module.exports = {
                 loader: 'jsx-loader'
             },
             {
-            test: /\.less$/,
+                test: /\.(less|css)$/,
                 loader: ExtractTextPlugin.extract('style-loader', 'css-loader!less-loader')
             }
         ]
