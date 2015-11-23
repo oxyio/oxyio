@@ -6,10 +6,10 @@ from flask import abort, request, url_for
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import joinedload
 
-from ..app import web_app
-from ..util.data import get_object_class_or_404, get_objects
-from ..util.web.response import render_or_jsonify, redirect_or_jsonify
-from ..util.web.user import (
+from oxyio.util.data import get_object_class_or_404, get_objects
+from oxyio.util.web.route import html_api_route
+from oxyio.util.web.response import render_or_jsonify, redirect_or_jsonify
+from oxyio.util.web.user import (
     get_own_objects,
     login_required, get_current_user,
     has_own_objects_permission, has_any_objects_permission,
@@ -33,6 +33,9 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
     if 'name' in request.args and len(request.args['name']) > 0:
         objects = objects.filter(obj.name.like('%{}%'.format(request.args['name'])))
 
+    # Fetch the objects
+    objects = list(objects)
+
     # Build filter form
     filter_form = obj().build_filter_form()
 
@@ -50,7 +53,7 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
     )
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/all',
     methods=['GET']
 )
@@ -66,7 +69,7 @@ def list_all_objects(module_name, objects_type):
     return _do_list_objects(module_name, objects_type, obj, objects, is_all=True)
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s',
     methods=['GET']
 )
@@ -80,7 +83,7 @@ def list_objects(module_name, objects_type):
     return _do_list_objects(module_name, objects_type, obj, objects)
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/add',
     methods=['GET']
 )
@@ -111,7 +114,7 @@ def view_add_objects(module_name, objects_type):
         return render_or_jsonify('object/add.html', **data)
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<regex("[a-zA-Z_]+"):object_type>s/add',
     methods=['POST']
 )

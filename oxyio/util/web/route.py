@@ -1,31 +1,22 @@
 # oxy.io
 # File: oxyio/util/web/route.py
-# Desc: flask's missing regex url router!
-# massive thanks to ATOzTOA @ stackoverflow:
-# http://stackoverflow.com/questions/14350920/define-a-route-for-url-ending-with-integer-in-python
+# Desc: handle automatic html/api routes
 
-from werkzeug.routing import BaseConverter
-from flask import g
-
-from ...app import web_app
+from oxyio.app import web_app
 
 
-class RegexConverter(BaseConverter):
-    def __init__(self, url_map, *items):
-        super(RegexConverter, self).__init__(url_map)
-        self.regex = items[0]
+def html_api_route(html_endpoint, **kwargs):
+    def decorator(func):
+        # Generate equivalent API endpoint
+        api_endpoint = '/api/v1{0}'.format(html_endpoint)
+        api_name = 'api_{0}'.format(func.__name__)
 
-web_app.url_map.converters['regex'] = RegexConverter
+        # Add both to the web app
+        for endpoint, name in [
+            (html_endpoint, func.__name__),
+            (api_endpoint, api_name)
+        ]:
+            web_app.add_url_rule(endpoint, name, func, **kwargs)
 
-
-@web_app.url_value_preprocessor
-def parse_url_module_object(endpoint, values):
-    if isinstance(values, dict):
-        if 'module_name' in values:
-            g.module = values['module_name']
-
-        if 'object_type' in values:
-            g.object = values['object_type']
-
-        if 'objects_type' in values:
-            g.object = values['objects_type']
+        return func
+    return decorator

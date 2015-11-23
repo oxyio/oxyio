@@ -5,16 +5,16 @@
 from flask import abort, request
 from jinja2 import TemplateNotFound
 
-from ..app import web_app
-from ..models.user import User, UserGroup
-from ..util.data import get_object_or_404
-from ..util.web.response import redirect_or_jsonify, render_or_jsonify
-from ..util.web.user import (
+from oxyio.models.user import User, UserGroup
+from oxyio.util.data import get_object_or_404
+from oxyio.util.web.route import html_api_route
+from oxyio.util.web.response import redirect_or_jsonify, render_or_jsonify
+from oxyio.util.web.user import (
     has_object_permission, login_required, has_global_objects_permission
 )
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<string:object_type>/<int:object_id>',
     methods=['GET']
 )
@@ -39,7 +39,7 @@ def view_object(module_name, object_type, object_id):
     )
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<string:object_type>/<int:object_id>/edit',
     methods=['GET']
 )
@@ -73,7 +73,7 @@ def view_edit_object(module_name, object_type, object_id):
         return render_or_jsonify('object/edit.html', **data)
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<string:object_type>/<int:object_id>/edit',
     methods=['POST']
 )
@@ -102,7 +102,7 @@ def edit_object(module_name, object_type, object_id):
     return redirect_or_jsonify(success='{0} updated'.format(obj.TITLE))
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<string:object_type>/<int:object_id>/delete',
     methods=['POST']
 )
@@ -129,7 +129,7 @@ def delete_object(module_name, object_type, object_id):
         hook()
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<string:object_type>/<int:object_id>/owner',
     methods=['GET']
 )
@@ -157,7 +157,7 @@ def view_owner_object(module_name, object_type, object_id):
     )
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<string:object_type>/<int:object_id>/owner',
     methods=['POST']
 )
@@ -186,7 +186,7 @@ def owner_object(module_name, object_type, object_id):
     return redirect_or_jsonify(success='{0} owner changed'.format(obj.TITLE))
 
 
-@web_app.route(
+@html_api_route(
     '/<string:module_name>/<string:object_type>/<int:object_id>/<string:func_name>',
     methods=['GET', 'POST']
 )
