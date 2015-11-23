@@ -1,5 +1,5 @@
 # Oxypanel
-# File: util/csrf.py
+# File: oxyio/includes/web/csrf.py
 # Desc: csrf protection!
 
 from uuid import uuid4

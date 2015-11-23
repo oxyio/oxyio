@@ -5,14 +5,18 @@
 import json
 from uuid import uuid4
 
-from ... import settings
-from ...app import redis_client
-from ...util.web.user import get_current_user
+from oxyio import settings
+from oxyio.app import redis_client
+
+from .user import get_current_user
 
 
 def make_websocket_request(websocket, websocket_data=None):
-    '''Generates a websocket request and puts it into Redis for the websocket view to handle'''
-    if websocket_data is None: websocket_data = {}
+    '''
+    Generates a websocket request and puts it into Redis for the websocket view to handle.
+    '''
+    if websocket_data is None:
+        websocket_data = {}
 
     request_key = str(uuid4())
     user = get_current_user()

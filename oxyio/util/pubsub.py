@@ -1,11 +1,13 @@
 # oxy.io
-# File: oxyio/util/web/pubsub.py
-# Desc: handles listening to pubsub events for web(sockets)
+# File: oxyio/util/pubsub.py
+# Desc: handles listening to pubsub events
 
 import gevent
 
-from ...app import redis_client
-from ..log import logger
+from oxyio.app import redis_client
+
+from .log import logger
+
 
 _pubsub = redis_client.pubsub()
 

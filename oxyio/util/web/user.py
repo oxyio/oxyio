@@ -11,12 +11,11 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from flask import g, abort, session, redirect, request
 from bcrypt import hashpw, gensalt
 
-from ... import settings
-from ...app import web_app
-from ...models.user import User
-from ...models.permission import Permission
-
-from ..data import get_object, get_objects, get_object_class
+from oxyio import settings
+from oxyio.app import web_app
+from oxyio.models.user import User
+from oxyio.models.permission import Permission
+from oxyio.util.data import get_object, get_objects, get_object_class
 
 
 # Warm request permission cache

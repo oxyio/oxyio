@@ -1,18 +1,18 @@
 # oxy.io
-# File: oxyio/web/util/template.py
+# File: oxyio/includes/web/template.py
 # Desc: template functions
 
 from flask import Markup, g, url_for
 
-from ... import settings
-from ...app import web_app, module_map, object_map
+from oxyio import settings
+from oxyio.app import web_app, module_map, object_map
 
 # Attach the get_flashed_request function
-from .flashes import get_flashed_request
+from oxyio.util.web.flashes import get_flashed_request
 web_app.jinja_env.globals['get_flashed_request'] = get_flashed_request
 
 # Attach the user functions to our global jinja env
-from .user import (
+from oxyio.util.web.user import (
     get_current_user,
     has_permission, has_permissions,
     has_object_permission, has_object_permissions,

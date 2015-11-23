@@ -2,9 +2,9 @@
 # File: websockets/task.py
 # Desc: the task subscribe/watch websocket (Redis events -> websocket)
 
-from .. import settings
-from ..models.websocket import Websocket
-from ..util.web.pubsub import subscribe, unsubscribe
+from oxyio import settings
+from oxyio.models.websocket import Websocket
+from oxyio.util.pubsub import subscribe, unsubscribe
 
 
 class Subscribe(Websocket):

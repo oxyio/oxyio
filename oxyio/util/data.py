@@ -4,7 +4,7 @@
 
 from flask import g, abort
 
-from ..app import web_app, module_map, object_map, websocket_map, task_map
+from oxyio.app import web_app, module_map, object_map, websocket_map, task_map
 
 
 def get_module(module_name):

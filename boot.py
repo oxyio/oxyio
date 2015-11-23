@@ -1,3 +1,4 @@
+# flake8: noqa
 # oxy.io
 # File: boot.py
 # Desc: bootstraps oxy.io
@@ -20,9 +21,9 @@ from oxyio.util.log import logger
 from oxyio.app import web_app, task_app, module_map
 
 # Import core models/websockets/tasks
-from oxyio.models import user, permission # noqa
-from oxyio.websockets import task # noqa
-from oxyio.tasks import update # noqa
+from oxyio.models import user, permission
+from oxyio.websockets import task
+from oxyio.tasks import update
 
 # Load/import all modules
 from oxyio.app.module_loader import list_modules, load_module
@@ -32,6 +33,7 @@ for name in list_modules():
 
 def boot_web():
     '''Bootstraps ready for the webserver.'''
+
     # Webserver
     from flask_debugtoolbar import DebugToolbarExtension
 
@@ -39,10 +41,14 @@ def boot_web():
     web_app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
     DebugToolbarExtension(web_app)
 
-    # Import the core web-utils & views
-    from oxyio.util.web import route, template, csrf, pubsub # noqa
-    from oxyio.views import dashboard, account, error, object, objects, websocket # noqa
-    from oxyio.views.admin import debug, logs, permissions, settings, users, dashboard, tasks # noqa
+    # Load web inlucdes (middleware, template funcs, etc)
+    from oxyio.includes.web import csrf , log, route, template, json_encoder
+
+    # Load core web views
+    from oxyio.views import dashboard, account, error, object, objects, websocket
+
+    # Load admin web views
+    from oxyio.views.admin import debug, logs, permissions, settings, users, dashboard, tasks
 
     # Make module blueprints
     for name, module in module_map.iteritems():
@@ -65,6 +71,7 @@ def boot_web():
 
 def boot_task():
     '''Bootstraps ready for the task worker.'''
+
     # Pre-start a Monitor task
     from pytask import Monitor
 
@@ -74,7 +81,7 @@ def boot_task():
 
 
 try:
-    import uwsgi # noqa
+    import uwsgi
     boot_web()
 except ImportError:
     pass
