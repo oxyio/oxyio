@@ -77,8 +77,9 @@ class BaseObject(object):
         return db.relationship('UserGroup')
 
     # Base functions
-    def serialize(self):
-        '''For outputting to JSON in API-mode'''
+    def serialise(self):
+        '''For outputting to JSON in API-mode.'''
+
         return {
             'id': self.id,
             'name': self.name

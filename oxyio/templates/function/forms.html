@@ -21,9 +21,6 @@
             {% for enum, name in enums.iteritems() %}
                 <option value="{{ enum }}"{% if value == enum %} selected{% endif %}>{{ name }}</option>
             {% endfor %}
-            {% if options.inline %}
-                <option value="">Show all</option>
-            {% endif %}
         </select>
         <span class="icon icon-arrow-down"></span>
     </div>

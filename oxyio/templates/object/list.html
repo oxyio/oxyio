@@ -111,7 +111,7 @@
             </tr>
         {% endfor %}
 
-        {% if objects.count() == 0 %}
+        {% if objects|length == 0 %}
             <tr class="no-results"><td colspan="100%">
                 No {{ objects_name|lower }} found
             </td></tr>

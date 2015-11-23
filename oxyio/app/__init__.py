@@ -10,8 +10,9 @@ from flask.ext.migrate import Migrate
 from flask.ext.uwsgi_websocket import GeventWebSocket
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 
+from oxyio import settings
+
 from .custom_sqlalchemy import SQLAlchemy
-from .. import settings
 
 
 # Map core names -> classes
