@@ -2,11 +2,15 @@
 # File: oxyio/scripts/user.py
 # Desc: create users & superusers
 
-from ..app import db, manager
-from ..models.user import User
+from boot import boot_core
+
+from oxyio.app import db, manager
+from oxyio.models.user import User
 
 
 def _add_user(is_keymaster=False):
+    boot_core()
+
     email = raw_input('# Email address: ')
     password = raw_input('# Password: ')
 
@@ -21,13 +25,15 @@ def _add_user(is_keymaster=False):
 
 @manager.command
 def add_user():
-    'Add normal users'
+    '''Add normal users.'''
+
     email = _add_user()
     print '# User {0} added!'.format(email)
 
 
 @manager.command
 def add_keymaster():
-    'Add keymaster users (access-all-areas)'
+    '''Add keymaster users (access-all-areas).'''
+
     email = _add_user(is_keymaster=True)
     print '# Keymaster {0} added!'.format(email)

@@ -1,8 +1,8 @@
 .DS_Store
 *.pyc
 
-# Secret configs!
-config.py
+# Secret settings!
+settings.py
 
 # Vagrant
 .vagrant/
@@ -15,9 +15,13 @@ migrations/versions/*
 !migrations/versions/.keepme
 
 # Webpack assets
-oxyio/static/dist/
+oxyio/web/static/dist/
 
 # Modules
 modules/*
 !modules/__init__.py
 modules_disabled/
+
+.venv
+.proj
+

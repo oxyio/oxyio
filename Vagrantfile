@@ -1,36 +1,59 @@
 # Oxypanel
+# File: Vagrantfile
+# Desc: development VM & testing VM's (Ubuntu, Debian & CentOS)
+
 Vagrant.configure('2') do |config|
+    # Give the box enough memory
+    config.vm.provider 'virtualbox' do |vbox|
+        vbox.customize ['modifyvm', :id, '--memory', 1024]
+    end
+
+    # Sync dev folder
+    config.vm.synced_folder './', '/opt/oxypanel'
+
     # Dev VM
     config.vm.define :dev, primary: true do |oxypanel|
         oxypanel.vm.hostname = 'oxypanel-dev'
-        oxypanel.vm.box = 'ubuntu/precise64'
-        oxypanel.vm.box_url = 'http://files.vagrantup.com/precise64.box'
+        oxypanel.vm.box = 'ubuntu/trusty64'
 
-        # Give the box enough memory
         oxypanel.vm.provider 'virtualbox' do |vbox|
-            vbox.name = 'oxypanel'
-            vbox.customize ['modifyvm', :id, '--memory', 1024]
+            vbox.name = 'oxypanel-dev'
         end
 
         # Expose an IP
         oxypanel.vm.network :private_network, ip: '13.13.13.13'
 
-        # Sync dev folder
-        oxypanel.vm.synced_folder './', '/opt/oxypanel'
-
-        # Install Oxypanel
-        oxypanel.vm.provision 'shell', path: 'https://raw.githubusercontent.com/Oxypanel/docs/develop/scripts/bootstrap.sh', args: 'dev'
+        # Install Oxypanel using local install.py with --debug
+        oxypanel.vm.provision 'shell', path: './deploy/bootstrap.sh', args: ['--dev', '--debug']
     end
 
-    # Test device
-    config.vm.define :device, autostart: false do |device|
-        device.vm.hostname = 'oxypanel-device'
-        device.vm.box = 'ubuntu/precise64'
-        device.vm.box_url = 'http://files.vagrantup.com/precise64.box'
+    # Ubuntu Trusty 14.04 test VM
+    config.vm.define :ubuntu, autostart: false do |ubuntu|
+        ubuntu.vm.hostname = 'oxypanel-ubuntu'
+        ubuntu.vm.box = 'ubuntu/trusty64'
+        ubuntu.vm.network :private_network, ip: '16.16.16.16'
 
-        device.ssh.private_key_path = './test/insecure_private_key'
+        # Install Oxypanel using local install.py
+        config.vm.provision 'shell', path: './deploy/bootstrap.sh', args: ['--dev']
+    end
 
-        # Expose an IP
-        device.vm.network :private_network, ip: '15.15.15.15'
+    # Debian Wheezy 7.5 test VM
+    config.vm.define :debian, autostart: false do |debian|
+        debian.vm.hostname = 'oxypanel-debian'
+        debian.vm.box = 'puphpet/debian75-x64'
+        debian.vm.network :private_network, ip: '17.17.17.17'
+
+        # Install Oxypanel using local install.py
+        config.vm.provision 'shell', path: './deploy/bootstrap.sh', args: ['--dev']
+    end
+
+    # Centos 6.5 test VM
+    config.vm.define :centos, autostart: false do |centos|
+        centos.vm.hostname = 'oxypanel-centos'
+        centos.vm.box = 'chef/centos-6.5'
+        centos.vm.network :private_network, ip: '18.18.18.18'
+
+        # Install Oxypanel using local install.py
+        config.vm.provision 'shell', path: './deploy/bootstrap.sh', args: ['--dev']
     end
 end

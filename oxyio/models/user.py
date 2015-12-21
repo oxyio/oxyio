@@ -1,14 +1,16 @@
-# Oxypanel
-# File: models/user.py
+# oxy.io
+# File: oxyio/models/user.py
 # Desc: User, UserGroup and Permission models
 
 from hashlib import md5
 
-from ..app import db
+from oxyio.app import db
+from oxyio.util.password import hash_password
 
 
 class UserGroup(db.Model):
-    __tablename__ = 'user_group'
+    __tablename__ = 'core_user_group'
+
     id = db.Column(db.Integer, primary_key=True)
 
     name = db.Column(db.String(64), nullable=False)
@@ -17,8 +19,25 @@ class UserGroup(db.Model):
         self.name = name
 
 
+class Permission(db.Model):
+    __tablename__ = 'core_user_permission'
+
+    name = db.Column(db.String(64), primary_key=True)
+
+    user_group_id = db.Column(db.Integer,
+        db.ForeignKey('core_user_group.id', ondelete='CASCADE'),
+        nullable=False, primary_key=True
+    )
+    user_group = db.relationship('UserGroup')
+
+    def __init__(self, name, user_group_id):
+        self.name = name
+        self.user_group_id = user_group_id
+
+
 class User(db.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'core_user'
+
     id = db.Column(db.Integer, primary_key=True)
 
     name = db.Column(db.String(64), nullable=False)
@@ -31,20 +50,25 @@ class User(db.Model):
     reset_time = db.Column(db.DateTime)
 
     # Have all permissions
-    is_keymaster = db.Column(db.Boolean, nullable=False, default=False, server_default='0')
+    is_keymaster = db.Column(db.Boolean,
+        nullable=False, default=False, server_default='0'
+    )
 
-    user_group_id = db.Column(db.Integer, db.ForeignKey('user_group.id', ondelete='SET NULL'))
+    user_group_id = db.Column(db.Integer,
+        db.ForeignKey('core_user_group.id', ondelete='SET NULL')
+    )
     user_group = db.relationship('UserGroup', backref=db.backref('users'))
 
     @property
     def gravatar(self):
-        return 'http://www.gravatar.com/avatar/{0}?s=40&d=retro'.format(md5(self.email).hexdigest())
+        return 'http://www.gravatar.com/avatar/{0}?s=40&d=retro'.format(
+            md5(self.email).hexdigest()
+        )
 
     def __init__(self, email, password=None, name=None):
         self.email = email
 
         if password is not None:
-            from util.web.user import hash_password # prevent circular import
             self.password = hash_password(password)
 
         if name is None:

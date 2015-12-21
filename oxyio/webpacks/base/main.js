@@ -1,26 +1,21 @@
-// Oxypane
-// Files: webpacks/base/main.js
+// oxy.io
+// Files: oxyio/webpacks/base/main.js
 // Desc: the root of the base webpack
 
-var selectedJS = require('selected.js');
+// Base oxy.io less
+import './less/base.less';
+import './less/buttons.less';
+import './less/forms.less';
+import './less/header.less';
+import './less/lists.less';
+import './less/loader.less';
+import './less/login.less';
+import './less/messages.less';
+import './less/subheader.less';
+import './less/tables.less';
+import './less/footer.less';
 
-// Base Oxypanel less
-require('./less/base.less');
-require('./less/buttons.less');
-require('./less/forms.less');
-require('./less/header.less');
-require('./less/lists.less');
-require('./less/loader.less');
-require('./less/login.less');
-require('./less/messages.less');
-require('./less/subheader.less');
-require('./less/tables.less');
-
-// Base Oxypanel js
-require('./js/tabs.js');
-require('./js/tasks.js');
-
-// Convert multiselects into something usable with selected.js
-window.addEventListener('load', function() {
-    selectedJS.init('[multiple]');
-});
+// Base oxy.io js
+import './js/tabs.js';
+import './js/tasks.js';
+import './js/selects.js';

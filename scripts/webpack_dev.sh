@@ -6,4 +6,4 @@ echo "--> Clearing oxyio/static/dist/"
 rm -rf oxyio/static/dist/
 
 echo "--> Running webpack..."
-webpack --watch --progress --colors
+ENV=dev webpack --watch --progress --colors

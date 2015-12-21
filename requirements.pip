@@ -12,7 +12,6 @@ flask-sqlalchemy==2.0
 
 # Migrations
 alembic==0.7.4
-flask-migrate==1.3.0
 
 # Hashing
 bcrypt==1.0.2
@@ -20,7 +19,6 @@ bcrypt==1.0.2
 # Services
 redis==2.10.3
 requests==2.7.0
-paramiko==1.15.2
 elasticsearch==1.4.0
 elasticmapping==1.2
 elasticquery==1.4

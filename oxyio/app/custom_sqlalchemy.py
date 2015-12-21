@@ -10,12 +10,15 @@ from flask.ext.sqlalchemy import (
     SQLAlchemy as OriginalSQLAlchemy
 )
 
-from ..models.meta import BaseMeta
-
 
 class SQLAlchemy(OriginalSQLAlchemy):
     def make_declarative_base(self):
         '''Creates Oxypanel's custom declarative base.'''
+
+        # Unfortunately we have to nest this import as the file imports from oxyio.app,
+        # which also imports this file.
+        from oxyio.models.base_meta import BaseMeta
+
         base = declarative_base(cls=Model, name='Model', metaclass=BaseMeta)
         base.query = _QueryProperty(self)
         return base

@@ -6,7 +6,6 @@ from flask import Flask
 from pytask import PyTask
 from redis import StrictRedis
 from flask.ext.script import Manager
-from flask.ext.migrate import Migrate
 from flask.ext.uwsgi_websocket import GeventWebSocket
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 
@@ -30,12 +29,15 @@ task_map = {
 
 
 # Webserver
-web_app = Flask('oxyio')
+web_app = Flask('oxyio',
+    static_folder='web/static',
+    template_folder='web/templates'
+)
 web_app.debug = settings.DEBUG
 web_app.secret_key = settings.SECRET
 
 # Websocket server
-websocket_app = GeventWebSocket(web_app, timeout=30)
+websocket_app = GeventWebSocket(web_app, timeout=settings.WEBSOCKET_TIMEOUT)
 
 # Manager/scripts
 manager = Manager(web_app, with_default_commands=False)
@@ -61,7 +63,7 @@ web_app.config['SQLALCHEMY_DATABASE_URI'] = '{0}://{1}:{2}@{3}:{4}/{5}'.format(
 )
 db = SQLAlchemy(web_app)
 
-# task worker
+# Task worker
 task_app = PyTask(
     redis_client,
     new_queue=settings.REDIS_NEW_QUEUE,
@@ -69,18 +71,3 @@ task_app = PyTask(
     task_prefix=settings.REDIS_TASK_PREFIX,
     cleanup_tasks=False
 )
-
-# Migrate system init
-migrate = Migrate(web_app, db)
-
-
-def health_check():
-    '''Runs a basic health-check for the above services.'''
-    # Database health check
-    db.session.execute('SELECT 1')
-
-    # Redis health check
-    redis_client.ping()
-
-    # Elasticsearch health check
-    es_client.ping()

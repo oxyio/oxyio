@@ -41,7 +41,7 @@ if(process.env.ENV == 'dev') {
 
 // Add module entries
 var files = fs.readdirSync('./modules/');
-_.each(files, function(moduleName, i) {
+_.each(files, function(moduleName) {
     if (moduleName.indexOf('.') == -1) {
         // Folder doesn't have to exist
         var moduleWebpacks;
@@ -91,8 +91,8 @@ module.exports = {
     module: {
         loaders: [
             {
-                test: /\.jsx$/,
-                loader: 'jsx-loader'
+                test: /\.js$/,
+                loader: 'babel-loader'
             },
             {
                 test: /\.(less|css)$/,

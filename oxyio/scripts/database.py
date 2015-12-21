@@ -1,44 +1,55 @@
-# Oxypanel
-# File: scripts/database.py
+# oxy.io
+# File: oxyio/scripts/database.py
 # Desc: perform/manage database migrations
 
 from os import path
 
+from alembic import command
+from alembic.config import Config
 from flask.ext.script import Manager
-from flask.ext.migrate import (
-    init as flask_init,
-    migrate as flask_migrate,
-    upgrade as flask_upgrade,
-    show as flask_show
-)
 
-from ..app import manager
+from boot import boot_core
+from oxyio.app import manager
+from oxyio.app.module_loader import load_module
 
 
-def _module_directory(name):
-    if name == 'core':
-        return 'migrations'
+def _get_module_config(module_name):
+    # Version table is always module_version
+    versions_table = '{0}_version'.format(module_name)
 
-    return path.join('modules', name, 'migrations')
+    # If module is actually oxy.io core
+    if module_name == 'core':
+        boot_core()
+        versions_dir = path.join('oxyio', 'migrations')
+
+    # Otherwise load the module
+    else:
+        load_module(module_name)
+        versions_dir = path.join('modules', module_name, 'migrations')
+
+    config = Config(path.join('alembic', 'alembic.ini'))
+    config.set_main_option('script_location', 'alembic')
+    config.set_main_option('version_locations', versions_dir)
+
+    config.set_section_option('oxyio', 'versions_table', versions_table)
+    config.set_section_option('oxyio', 'module_name', module_name)
+
+    return config
 
 
 db_manager = Manager(usage='Manage database migrations')
 
-@db_manager.command
-def init(name):
-    flask_init(directory=_module_directory(name))
 
 @db_manager.command
-def migrate(name):
-    flask_migrate(directory=_module_directory(name))
+def migrate(module_name):
+    config = _get_module_config(module_name)
+    command.revision(config, autogenerate=True)
+
 
 @db_manager.command
-def upgrade(name):
-    flask_upgrade(directory=_module_directory(name))
-
-@db_manager.command
-def show(name):
-    flask_show(directory=_module_directory(name))
+def upgrade(module_name):
+    config = _get_module_config(module_name)
+    command.upgrade(config, 'head')
 
 
 manager.add_command('db', db_manager)

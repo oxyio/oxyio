@@ -1,10 +1,11 @@
-# Oxypanel
-# File: websockets/task.py
+# oxy.io
+# File: oxyio/websockets/task.py
 # Desc: the task subscribe/watch websocket (Redis events -> websocket)
 
 from oxyio import settings
-from oxyio.models.websocket import Websocket
 from oxyio.util.pubsub import subscribe, unsubscribe
+
+from .base import Websocket
 
 
 class Subscribe(Websocket):
