@@ -32,6 +32,10 @@ class BaseMeta(DeclarativeMeta):
                 module_name, object_name = cls.NAME.split('/')
                 object_map[module_name][object_name] = cls
 
+                # Attach split names back on the object
+                cls.MODULE = module_name
+                cls.OBJECT = object_name
+
                 logger.debug('Registered object {0}/{1}'.format(
                     module_name, object_name
                 ))
@@ -45,6 +49,11 @@ class BaseMeta(DeclarativeMeta):
                     item_map[module_name][object_name] = {}
 
                 item_map[module_name][object_name][item_name] = cls
+
+                # Attach split names back on the object
+                cls.MODULE = module_name
+                cls.OBJECT = object_name
+                cls.ITEM = item_name
 
                 logger.debug('Registered item {0}/{1}/{2}'.format(
                     module_name, object_name, item_name

@@ -11,13 +11,40 @@ from oxyio.util.log import logger
 from . import module_map, object_map, item_map, websocket_map, task_map
 
 
+MODULE_NAMES = None
+
 def list_modules():
     '''Lists modules from ./modules/.'''
 
-    return [
-        d for d in listdir('modules')
-        if path.isdir(path.join('modules', d))
-    ]
+    global MODULE_NAMES
+
+    if MODULE_NAMES is None:
+        MODULE_NAMES = [
+            d for d in listdir('modules')
+            if path.isdir(path.join('modules', d))
+        ]
+
+    return MODULE_NAMES
+
+
+def has_module(name):
+    '''Checks if a module is present.'''
+
+    return name in list_modules()
+
+
+def _load_module_files(name, folder):
+    files = glob(path.join('modules', name, folder, '*.py'))
+
+    for filename in files:
+        # Skip __init__.py
+        if filename.endswith('__.py'):
+            continue
+
+        # Load/import the file
+        filename = path.basename(filename).replace('.py', '')
+        logger.debug('[{0}] Importing {1} file: {2}'.format(name, folder, filename))
+        import_module('modules.{0}.{1}.{2}'.format(name, folder, filename))
 
 
 def load_module(name):
@@ -30,6 +57,7 @@ def load_module(name):
     import_module('modules.{0}.config'.format(name))
     import_module('modules.{0}.web.views'.format(name))
 
+    # Setup the global namespace
     module_map[name] = module
     object_map[name] = {}
     item_map[name] = {}
@@ -41,26 +69,7 @@ def load_module(name):
         logger.debug('[{0}] Module load'.format(name))
         module.load()
 
-    # Get objects
-    files = glob(path.join('modules', name, 'models', '*.py'))
-    for file in files:
-        if file.endswith('__.py'): continue
-        file = path.basename(file).replace('.py', '')
-        logger.debug('[{0}] Importing models file: {1}'.format(name, file))
-        import_module('modules.{0}.models.{1}'.format(name, file))
-
-    # Get websockets
-    files = glob(path.join('modules', name, 'websockets', '*.py'))
-    for file in files:
-        if file.endswith('__.py'): continue
-        file = path.basename(file).replace('.py', '')
-        logger.debug('[{0}] Importing websocket file: {1}'.format(name, file))
-        import_module('modules.{0}.websockets.{1}'.format(name, file))
-
-    # Get tasks
-    files = glob(path.join('modules', name, 'tasks', '*.py'))
-    for file in files:
-        if file.endswith('__.py'): continue
-        file = path.basename(file).replace('.py', '')
-        logger.debug('[{0}] Importing task file: {1}'.format(name, file))
-        import_module('modules.{0}.tasks.{1}'.format(name, file))
+    # Load module models/objects, websockets & tasks
+    _load_module_files(name, 'models')
+    _load_module_files(name, 'websockets')
+    _load_module_files(name, 'tasks')
