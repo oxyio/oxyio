@@ -61,16 +61,12 @@ section#header, section#sidebar {
         padding: 0;
 
         &:hover li.active > a:first-child {
-            border-radius: @borderRadius @borderRadius 0 0;
+            border-radius: @borderRadius @borderRadius @borderRadius 0;
         }
 
         li {
             position: relative;
             z-index: 90;
-
-            &.active {
-                min-width: 155px;
-            }
 
             a {
                 font-size: 18px;
@@ -91,7 +87,7 @@ section#header, section#sidebar {
 
                 .icon-arrow-down {
                     float: right;
-                    margin: 4px 5px 0 0;
+                    margin: 4px 5px 0 10px;
                 }
 
                 &.black {
@@ -102,6 +98,9 @@ section#header, section#sidebar {
                 }
                 &.orange {
                     background: @orange;
+                }
+                &.blue {
+                    background: @blue;
                 }
                 &.red {
                     background: @red;
@@ -131,25 +130,31 @@ section#header, section#sidebar {
                 margin: 41px 0 0 0px;
                 display: none;
                 position: absolute;
-                width: 100%;
+                width: 180px;
 
                 li {
                     a {
-                        padding: 6px 0px 5px 0px;
-                        border-radius: 0;
-                        width: 100%;
+                        padding: 6px 6px 5px 0px;
+                        border-radius: 0 @borderRadius @borderRadius 0;
                         float: left;
+                        clear: both;
+                        width: auto;
                         color: @black;
-                        border: 1px solid @darkGrey;
-                        border-width: 0 1px;
+                        border-left: 1px solid @darkGrey;
 
-                        &.black, &.green, &.red, &.orange, &.blue, &.purple {
+                        -moz-transition: padding 300ms ease-out;
+                        -webkit-transition: padding 300ms ease-out;
+                        transition: padding 300ms ease-out;
+
+                        &.black, &.green, &.red, &.orange, &.blue, &.purple, &.blue {
                             background: @white;
                         }
 
                         &:hover {
                             color: @white;
                             background: @black;
+
+                            padding-right: 50px;
                         }
 
                         &.green {
@@ -172,6 +177,19 @@ section#header, section#sidebar {
                             &:hover {
                                 border-color: @orange;
                                 background: @orange;
+                                .icon {
+                                    color: @white;
+                                }
+                            }
+                        }
+
+                        &.blue {
+                            .icon {
+                                color: @blue;
+                            }
+                            &:hover {
+                                border-color: @blue;
+                                background: @blue;
                                 .icon {
                                     color: @white;
                                 }
@@ -217,11 +235,6 @@ section#header, section#sidebar {
                             }
                         }
                     }
-                }
-
-                li:last-child a {
-                    border-bottom: 1px solid @darkGrey;
-                    border-radius: 0 0 @borderRadius @borderRadius;
                 }
             }
         }
