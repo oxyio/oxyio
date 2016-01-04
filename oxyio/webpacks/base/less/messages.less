@@ -4,12 +4,57 @@
 */
 
 @import './shared/colours.less';
+@import './shared/dimensions.less';
+
+
+@keyframes removed-message {
+    to {
+        transform : translateY(-100px);
+    }
+}
+
+
+section#messages {
+    position: absolute;
+    top: 60px;
+    width: 500px;
+    left: 50%;
+    margin-left: -250px;
+    z-index: 9;
+
+    div.message {
+        border-radius: 0 0 @borderRadius @borderRadius;
+        position: absolute;
+        width: 100%;
+
+        &.removed {
+            animation: removed-message .2s linear forwards;
+        }
+
+        &.message-1 {
+            padding-top: 10px;
+        }
+        &.message-2 {
+            padding-top: 20px;
+        }
+        &.message-3 {
+            padding-top: 30px;
+        }
+        &.message-4 {
+            padding-top: 40px;
+        }
+        &.message-5 {
+            padding-top: 50px;
+        }
+    }
+}
+
 
 div.message {
     padding: 10px 5px;
     background: @grey;
     margin-bottom: 10px;
-    border-radius: 3px;
+    border-radius: @borderRadius;
 
     &.error, &.success, &.warning, &.info {
         color: @white;

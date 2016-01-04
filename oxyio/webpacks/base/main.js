@@ -19,3 +19,4 @@ import './less/footer.less';
 import './js/tabs.js';
 import './js/tasks.js';
 import './js/selects.js';
+import './js/messages.js';

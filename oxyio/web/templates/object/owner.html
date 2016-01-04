@@ -1,11 +1,9 @@
-{% import 'function/flashes.html' as flashes %}
 {% extends 'object/base.html' %}
+
 
 {% block content %}
     <form method="post" class="block third">
         <h3 class="top">Change User &amp; Group</h3>
-
-        {{ flashes.messages() }}
 
         <label for="user">User:</label>
         <div class="select">

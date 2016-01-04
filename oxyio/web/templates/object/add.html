@@ -1,6 +1,6 @@
 {% import 'function/forms.html' as forms %}
-{% import 'function/flashes.html' as flashes %}
 {% extends 'base_user.html' %}
+
 
 {% block subheader %}
     <section id="subheader"><div class="wrap">
@@ -18,8 +18,6 @@
 {% block content %}
     <div class="block base">
         <form action="#" method="post" class="third block">
-            {{ flashes.messages() }}
-
             {{ forms.fields(add_form) }}
 
             <button class="button green">Add {{ object_name }}</button>

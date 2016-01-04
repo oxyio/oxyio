@@ -1,5 +1,5 @@
 {% macro messages() %}
     {% for category, message in get_flashed_messages(with_categories=True) %}
-        <div class="message {{ category }}">{{ message }}</div>
+        <div class="message message-{{ loop.index }} {{ category }}">{{ message }}</div>
     {% endfor %}
 {% endmacro %}

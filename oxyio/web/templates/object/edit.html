@@ -1,12 +1,10 @@
 {% import 'function/forms.html' as forms %}
-{% import 'function/flashes.html' as flashes %}
 {% extends 'object/base.html' %}
+
 
 {% block content %}
     <div class="block base">
         <form action="" method="post" class="third block">
-            {{ flashes.messages() }}
-
             {{ forms.fields(edit_form, object) }}
 
             <button class="button green">Update</button>
