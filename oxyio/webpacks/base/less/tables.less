@@ -5,6 +5,7 @@
 
 @import './shared/colours.less';
 @import './shared/typography.less';
+@import './shared/dimensions.less';
 
 
 table {
@@ -13,6 +14,10 @@ table {
 
     &.fixed {
         table-layout: fixed;
+    }
+
+    tr.no-results {
+        text-align: center;
     }
 
     thead {
@@ -68,6 +73,7 @@ table {
             }
         }
     }
+
     &.object-based {
         tr:not(.no-results) {
             td:last-child {
@@ -84,7 +90,21 @@ table {
         }
     }
 
-    tr.no-results {
-        text-align: center;
+    &.meta {
+        background: @grey;
+
+        tr {
+            td {
+                padding: 5px 0;
+
+                &:first-child {
+                    color: @fontGrey;
+                }
+            }
+
+            &:hover td {
+                background: transparent;
+            }
+        }
     }
 }

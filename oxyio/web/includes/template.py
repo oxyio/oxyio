@@ -7,9 +7,16 @@ from flask import Markup, g, url_for
 from oxyio import settings
 from oxyio.app import web_app, module_map, object_map
 
+
 # Attach the get_flashed_request function
 from oxyio.web.util.flashes import get_flashed_request
 web_app.jinja_env.globals['get_flashed_request'] = get_flashed_request
+
+
+# Attach the has_module function
+from oxyio.app.module_loader import has_module
+web_app.jinja_env.globals['has_module'] = has_module
+
 
 # Attach the user functions to our global jinja env
 from oxyio.web.util.user import (
@@ -29,6 +36,10 @@ web_app.jinja_env.globals['has_any_objects_permission'] = has_any_objects_permis
 web_app.jinja_env.globals['has_global_objects_permission'] = has_global_objects_permission
 
 
+# Helper for checking for list
+web_app.jinja_env.globals['is_list'] = lambda arg: isinstance(arg, list)
+
+
 # Make settings accessible within templates
 web_app.jinja_env.globals['get_settings'] = lambda: settings
 
@@ -41,15 +52,15 @@ web_app.jinja_env.globals['prettify_relation'] = lambda field: (
 
 
 # Local in-Python cache of webpack JSON data
-_webpack_build = None
+WEBPACK_BUILD = None
 
 def _get_webpack_build():
-    global _webpack_build
+    global WEBPACK_BUILD
 
-    if _webpack_build is None:
-        _webpack_build = {}
+    if WEBPACK_BUILD is None:
+        WEBPACK_BUILD = {}
 
-    return _webpack_build
+    return WEBPACK_BUILD
 
 
 def _module_data():
@@ -60,6 +71,7 @@ def _module_data():
         color = 'red'
         icon = 'cog'
         name = 'Admin'
+
     else:
         module = module_map[module_name]
         name = module.config.TITLE
@@ -72,6 +84,7 @@ def _module_data():
 
 def modules_nav():
     '''Generate dropdown for modules changing the active/current one.'''
+
     # Active module link
     add_dashboard = False
     add_admin = True
@@ -131,6 +144,7 @@ def modules_nav():
         '''.format(url_for('admin_dashboard')))
 
     out = '{0}<ul>{1}</ul>'.format(out, ''.join(links))
+
     return Markup(out)
 
 web_app.jinja_env.globals['modules_nav'] = modules_nav
@@ -138,6 +152,7 @@ web_app.jinja_env.globals['modules_nav'] = modules_nav
 
 def module_nav():
     '''Generate nav for current module (objects/etc).'''
+
     if not hasattr(g, 'module'):
         return ''
 
@@ -180,6 +195,7 @@ def webpack(name, extension):
         return Markup('''
             <link rel="stylesheet" href="/static/dist/{}.css" />
         '''.format(outname))
+
 
 # Attach webpack_js and webpack_css wrappers
 web_app.jinja_env.globals['webpack_js'] = lambda name: webpack(name, 'js')

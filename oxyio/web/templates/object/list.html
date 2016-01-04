@@ -1,14 +1,21 @@
 {% import 'function/forms.html' as forms %}
 {% extends 'base_user.html' %}
 
+
 {% block subheader %}
     <section id="subheader"><div class="wrap">
         <h1>{% if action == 'all' %}All {% endif %}{{ objects_name }}</h1>
 
         <form class="inline">
-            <div><input type="text" name="name" placeholder="Filter by name..." value="{{ request.args.name }}" /></div>
+            <div>
+                <input
+                    type="text" name="name"
+                    placeholder="Filter by name..."
+                    value="{{ request.args.name }}"
+                />
+            </div>
 
-            {{ forms.fields(filter_form, inline=True) }}
+            {{ forms.fields(filter_form, object=request.args, inline=True) }}
 
             <div><button type="submit" class="button blue small">Filter</button></div>
         </form>
@@ -27,6 +34,7 @@
     </div></section>
 {% endblock %}
 
+
 {% block content %}
     <table class="object-based">
         <thead><tr>
@@ -42,12 +50,12 @@
                 <th>{{ forms.format_title(field, options) }}</th>
             {% endfor %}
 
-            {% for field, _, _, _ in list_relations %}
-                <th>{{ prettify_relation(field|title) }}</th>
+            {% for field, _, _, options in list_relations %}
+                <th>{{ forms.format_title(prettify_relation(field), options) }}</th>
             {% endfor %}
 
-            {% for field, _, _, _ in list_mrelations %}
-                <th>{{ field|title }}</th>
+            {% for field, _, _, options in list_mrelations %}
+                <th>{{ forms.format_title(field, options) }}</th>
             {% endfor %}
 
             <th width="145px"></th>
@@ -56,7 +64,8 @@
             <tr>
                 <td>{{ object.id }}</td>
                 <td>
-                    <a class="module-color" href="{{ url_for('view_object', module_name=module_name, object_type=objects_type, object_id=object.id) }}">    {{ object.name }}
+                    <a class="module-color" href="{{ object.view_url }}">
+                        {{ object.name }}
                     </a>
                 </td>
                 {% if action == 'all' %}
@@ -72,6 +81,8 @@
                     <td>{% if object[field] %}
                         {% if options.enums %}
                             {{ options.enums[object[field]] }}
+                        {% elif is_list(object[field]) %}
+                            {{ object[field]|join(', ') }}
                         {% else %}
                             {{ forms.format_value(object[field], options) }}
                         {% endif %}
@@ -80,24 +91,24 @@
 
                 {% for field, module, type, _ in list_relations %}
                     <td>{% if object[field] %}
-                        <a class="module-color" href="{{ url_for('view_object', module_name=module, object_type=type, object_id=object[field].id) }}">{{ object[field].name }}</a>
+                        <a class="relation-link" href="{{ object[field].view_url }}">{{ object[field].name }}</a>
                     {% endif %}</td>
                 {% endfor %}
 
                 {% for field, module, type, _ in list_mrelations %}
-                    <td>{% for object in object[field] %}
-                        <a class="module-color" href="{{ url_for('view_object', module_name=module, object_type=type, object_id=object.id) }}">{{ object.name }}</a>{% if not loop.last %}, {% endif %}
+                    <td>{% for obj in object[field] %}
+                        <a class="relation-link" href="{{ obj.view_url }}">{{ obj.name }}</a>{% if not loop.last %}, {% endif %}
                     {% endfor %}</td>
                 {% endfor %}
 
                 <td class="buttonset align-right">
                     {% if action == 'own' %}
-                        <a class="button green small" href="{{ url_for('view_object', module_name=module_name, object_type=objects_type, object_id=object.id) }}">
+                        <a class="button green small" href="{{ object.view_url }}">
                             View
                         </a>
 
                         {% if has_own_objects_permission(module_name, objects_type, 'edit') %}
-                            <a href="{{ url_for('view_object', module_name=module_name, object_type=objects_type, object_id=object.id) }}/edit" class="button blue small">
+                            <a href="{{ object.edit_url }}" class="button blue small">
                                 Edit
                             </a>
                         {% endif %}
@@ -106,10 +117,10 @@
                             <button class="button red small">Delete</button>
                         {% endif %}
                     {% else %}
-                        <a class="button green small" href="{{ url_for('view_object', module_name=module_name, object_type=objects_type, object_id=object.id) }}">View</a>
+                        <a class="button green small" href="{{ object.view_url }}">View</a>
 
                         {% if has_any_objects_permission(module_name, objects_type, 'edit') %}
-                            <a href="{{ url_for('view_object', module_name=module_name, object_type=objects_type, object_id=object.id) }}/edit" class="button blue small">Edit</a>
+                            <a href="{{ object.edit_url }}" class="button blue small">Edit</a>
                         {% endif %}
 
                         {% if has_global_objects_permission(module_name, objects_type, 'delete') %}

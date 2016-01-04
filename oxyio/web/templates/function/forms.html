@@ -1,10 +1,10 @@
 <!-- Shortcuts-->
 
-{% macro format_title(field, options) %}
+{% macro format_title(field, options, inline=False) %}
     {%- if options.title -%}
         {{ options.title }}
     {%- else -%}
-        {{ field }}
+        {% if inline %}{{ field }}{% else %}{{ field|title }}{% endif %}
     {%- endif -%}
 {% endmacro %}
 
@@ -31,7 +31,7 @@
     {% if not inline %}
         {{ label(field, options) }}
     {% endif %}
-    <input type="text" id="{{ field }}" name="{{ field }}" value="{{ format_value(value, options) }}" {% if inline %}placeholder="Filter by {{ format_title(field, options) }}..."{% endif %} />
+    <input type="text" id="{{ field }}" name="{{ field }}" value="{{ format_value(value, options) }}" {% if inline %}placeholder="Filter by {{ format_title(field, options, inline=inline) }}..."{% endif %} />
 {% endmacro %}
 
 <!-- enum -> select -->
@@ -42,7 +42,7 @@
     <div class="select">
         <select id="{{ field }}" name="{{ field }}">
             {% if inline %}
-                <option value="">Filter by {{ format_title(field, options) }}</option>
+                <option value="">Filter by {{ format_title(field, options, inline=True) }}</option>
             {% endif %}
             {% for enum, name in enums.iteritems() %}
                 <option value="{{ enum }}"{% if value == enum %} selected{% endif %}>{{ format_value(name, options) }}</option>

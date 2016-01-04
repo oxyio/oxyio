@@ -4,6 +4,7 @@
 */
 
 @import './colours.less';
+@import './dimensions.less';
 
 
 @bodyFont: 'PTSansRegular';
@@ -27,9 +28,21 @@ a {
     text-decoration: none;
     border-bottom: 1px solid @darkGrey;
     cursor: pointer;
+
+    &:hover {
+        border-bottom-color: @darkestGrey;
+    }
 }
-a:hover {
-    border-bottom-color: @darkestGrey;
+
+a.relation-link {
+    border-radius: @borderRadius;
+    padding: 2px;
+    background: @grey;
+    border: 1px solid @darkGrey;
+
+    &:hover {
+        border-color: @darkestGrey;
+    }
 }
 
 strong, h1, h2, h3, h4, h5 {
