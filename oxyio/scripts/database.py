@@ -8,9 +8,8 @@ from alembic import command
 from alembic.config import Config
 from flask.ext.script import Manager
 
-from boot import boot_core
+from boot import boot_all_modules
 from oxyio.app import manager
-from oxyio.app.module_loader import load_module
 
 
 def _get_module_config(module_name):
@@ -19,13 +18,13 @@ def _get_module_config(module_name):
 
     # If module is actually oxy.io core
     if module_name == 'core':
-        boot_core()
         versions_dir = path.join('oxyio', 'migrations')
 
     # Otherwise load the module
     else:
-        load_module(module_name)
         versions_dir = path.join('modules', module_name, 'migrations')
+
+    boot_all_modules()
 
     config = Config(path.join('alembic', 'alembic.ini'))
     config.set_main_option('script_location', 'alembic')

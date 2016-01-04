@@ -24,7 +24,7 @@ from oxyio.util.log import logger
 from oxyio.app import web_app, task_app, module_map, task_map
 
 # Load/import all modules
-from oxyio.app.module_loader import list_modules, load_module
+from oxyio.app.module_loader import load_module
 
 
 def boot_core():
@@ -40,7 +40,7 @@ def boot_core():
 def boot_all_modules():
     '''Bootstraps/loads all the modules.'''
 
-    for name in list_modules():
+    for name in settings.MODULES:
         load_module(name)
 
 

@@ -3,34 +3,19 @@
 # Desc: loads oxy.io modules
 
 from glob import glob
-from os import listdir, path
+from os import path
 from importlib import import_module
 
+from oxyio import settings
 from oxyio.util.log import logger
 
 from . import module_map, object_map, item_map, websocket_map, task_map
 
 
-MODULE_NAMES = None
-
-def list_modules():
-    '''Lists modules from ./modules/.'''
-
-    global MODULE_NAMES
-
-    if MODULE_NAMES is None:
-        MODULE_NAMES = [
-            d for d in listdir('modules')
-            if path.isdir(path.join('modules', d))
-        ]
-
-    return MODULE_NAMES
-
-
 def has_module(name):
     '''Checks if a module is present.'''
 
-    return name in list_modules()
+    return name in settings.MODULES
 
 
 def _load_module_files(name, folder):
@@ -55,7 +40,6 @@ def load_module(name):
     # Import the module
     module = import_module('modules.{0}'.format(name))
     import_module('modules.{0}.config'.format(name))
-    import_module('modules.{0}.web.views'.format(name))
 
     # Setup the global namespace
     module_map[name] = module
