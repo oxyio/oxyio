@@ -81,7 +81,7 @@ module.exports = {
     entry: entries,
     plugins: plugins,
     output: {
-        path: './oxyio/static/dist/',
+        path: './oxyio/web/static/dist/',
         filename: names.base
     },
     resolve: {
