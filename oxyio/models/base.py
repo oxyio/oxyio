@@ -6,6 +6,7 @@
 
 from itertools import product
 
+from flask import url_for
 from sqlalchemy.ext.declarative import declared_attr
 
 from oxyio.app import db
@@ -55,13 +56,33 @@ def iter_relations(relations):
         yield (attribute, module, object_type, options)
 
 
-class Item(object):
+class Base(object):
+    MODULE = OBJECT = None
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)
+
+        super(Base, self).__init__()
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+class Item(Base):
     _oxyio_type = 'item'
+
+    ITEM = None
 
     id = db.Column(db.Integer, primary_key=True)
 
 
-class Object(object):
+class Object(Base):
     _oxyio_type = 'object'
 
     # Config
@@ -138,15 +159,26 @@ class Object(object):
     def user_group(self):
         return db.relationship('UserGroup')
 
-    # Notes
-    #
-
     @property
     def notes(self):
+        '''Lazily SELECT notes for this object.'''
+
         return Note.query.filter_by(
             object_id=self.id,
             object_type=self.NAME
         )
+
+    # Exceptions
+    #
+
+    class ObjectError(Exception):
+        pass
+
+    class ValidationError(ObjectError):
+        pass
+
+    class DeletionError(ObjectError):
+        pass
 
     # Helpers
     #
@@ -178,6 +210,30 @@ class Object(object):
             form.append((string_type, field, arg, options))
 
         return form
+
+    # URL Helpers
+    #
+
+    def url(self, url_string):
+        return url_for(url_string,
+            module_name=self.MODULE, object_type=self.OBJECT, object_id=self.id
+        )
+
+    @property
+    def view_url(self):
+        return self.url('view_object')
+
+    @property
+    def edit_url(self):
+        return self.url('edit_object')
+
+    @property
+    def owner_url(self):
+        return self.url('owner_object')
+
+    @property
+    def delete_url(self):
+        return self.url('delete_object')
 
     # Forms
     #
@@ -246,7 +302,7 @@ class Object(object):
         # Check name
         name = request_data.get('name')
         if not name or len(name) <= 0:
-            return False, 'Invalid name'
+            raise self.ValidationError('Invalid name')
 
         setattr(self, 'name', name)
 
@@ -260,12 +316,12 @@ class Object(object):
                     try:
                         data = int(data)
                     except ValueError:
-                        return False, 'Invalid data for {0}'.format(field)
+                        raise self.ValidationError('Invalid data for {0}'.format(field))
 
                 if python_type is set:
                     if data not in arg:
-                        return (
-                            False, 'Invalid data for {0}; {1} is not in set {2}'.format(
+                        raise self.ValidationError(
+                            'Invalid data for {0}; {1} is not in set {2}'.format(
                                 field, data, arg
                             )
                         )
@@ -273,8 +329,8 @@ class Object(object):
                 if python_type is str:
                     length = len(data)
                     if length > arg:
-                        return (
-                            False, 'String to long for {0}, limit is {1}'.format(
+                        raise self.ValidationError(
+                            'String to long for {0}, limit is {1}'.format(
                                 field, arg
                             )
                         )
@@ -295,7 +351,9 @@ class Object(object):
                     object_id = None
 
             except ValueError:
-                return False, 'Invalid object_id for: {0}'.format(object_type)
+                raise self.ValidationError(
+                    'Invalid object_id for: {0}'.format(object_type)
+                )
 
             # Skip if set None or no change
             if object_id is None or getattr(self, field_name) == object_id:
@@ -303,8 +361,8 @@ class Object(object):
 
             # Check we even have edit permission on this object type
             if not has_object_permission(module_name, object_type, object_id, 'Edit'):
-                return (
-                    False, 'You do not have permission to set {0} => {1} #{2}'.format(
+                raise self.ValidationError(
+                    'You do not have permission to set {0} => {1} #{2}'.format(
                         field_name, object_type, object_id
                     )
                 )
@@ -321,15 +379,17 @@ class Object(object):
             try:
                 object_ids = set([int(i) for i in object_ids])
             except ValueError:
-                return False, 'Invalid object_ids for: {0}'.format(object_type)
+                raise self.ValidationError(
+                    'Invalid object_ids for: {0}'.format(object_type)
+                )
 
             # Check edit permissions for each object
             if not all(
                 has_object_permission(module_name, objects_type, object_id, 'Edit')
                 for object_id in object_ids
             ):
-                return (
-                    False, 'You do not have permission to set {0} => {1} #s: {2}'.format(
+                raise self.ValidationError(
+                    'You do not have permission to set {0} => {1} #s: {2}'.format(
                         field, objects_type, object_ids
                     )
                 )
@@ -343,8 +403,6 @@ class Object(object):
 
             setattr(self, field, new_objects)
 
-        return True, None
-
     # Shortcuts/misc
     #
 
@@ -355,10 +413,6 @@ class Object(object):
             key: getattr(self, key, None)
             for key in self.get_column_keys()
         }
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
 
     def delete(self):
         db.session.delete(self)
@@ -373,10 +427,10 @@ class Object(object):
     #
 
     def is_valid(self, new=False):
-        return True, None
+        pass
 
     def pre_delete(self):
-        return True
+        pass
 
     def pre_view(self):
         pass

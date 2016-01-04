@@ -2,7 +2,7 @@
 # File: oxyio/views/objects.py
 # Desc: list & add objects
 
-from flask import abort, request, url_for
+from flask import abort, request
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import joinedload
 
@@ -34,20 +34,33 @@ def _filter_field(objects, obj, field, value):
 
 
 def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
+    # Join-load any relations
+    objects = objects.options(*[
+        joinedload(field)
+        for field, _, _ in obj.LIST_RELATIONS
+    ])
+
     # Join-load any multi relations
     objects = objects.options(*[
         joinedload(field)
         for field, _, _ in obj.LIST_MRELATIONS
     ])
 
+    # Join-load any list fields which ask for it
+    for (field, options) in obj.LIST_FIELDS:
+        if options.get('join'):
+            objects = objects.options(joinedload(field))
+
     # Apply any filters
-    for (field, _) in obj.LIST_FIELDS:
+    for (field, _) in obj.FILTER_FIELDS:
         if in_request_args(field):
             objects = _filter_field(objects, obj, field, request.args[field])
 
     # Name filter
     if 'name' in request.args and len(request.args['name']) > 0:
-        objects = objects.filter(obj.name.like('%{}%'.format(request.args['name'])))
+        objects = objects.filter(
+            obj.name.like('%{0}%'.format(request.args['name']))
+        )
 
     # Fetch the objects
     objects = list(objects)
@@ -83,6 +96,7 @@ def list_all_objects(module_name, objects_type):
 
     # Get objects
     objects = get_objects(module_name, objects_type)
+
     return _do_list_objects(module_name, objects_type, obj, objects, is_all=True)
 
 
@@ -97,6 +111,7 @@ def list_objects(module_name, objects_type):
 
     obj = get_object_class_or_404(module_name, objects_type)
     objects = get_own_objects(module_name, objects_type)
+
     return _do_list_objects(module_name, objects_type, obj, objects)
 
 
@@ -148,17 +163,12 @@ def add_objects(module_name, object_type):
     new_object = obj()
 
     # Apply EDIT_FIELDS & basic field check
-    status, error = new_object.check_apply_edit_fields()
+    try:
+        new_object.check_apply_edit_fields()
+        new_object.is_valid(new=True)
 
-    # If above was OK, do is_valid check
-    status, error = (
-        (status, error)
-        if status is not True
-        else new_object.is_valid(new=True)
-    )
-
-    if not status:
-        return redirect_or_jsonify(error=error)
+    except new_object.ValidationError as e:
+        return redirect_or_jsonify(error=e.message)
 
     # Set the user_id to current user
     new_object.user_id = get_current_user().id
@@ -173,10 +183,6 @@ def add_objects(module_name, object_type):
 
     # Redirect to it
     return redirect_or_jsonify(
-        url=url_for('edit_object',
-            module_name=module_name,
-            object_type=object_type,
-            object_id=new_object.id
-        ),
+        new_object.view_url,
         success='{0} Added'.format(obj.TITLE)
     )

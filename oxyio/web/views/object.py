@@ -67,9 +67,11 @@ def view_edit_object(module_name, object_type, object_id):
         'action': 'edit'
     }
 
-    # Load view template file from module, default to standard
+    # Try loading object specific template
     try:
         return render_or_jsonify('{0}/edit.html'.format(object_type), **data)
+
+    # Default to standard template
     except TemplateNotFound:
         return render_or_jsonify('object/edit.html', **data)
 
@@ -86,11 +88,14 @@ def edit_object(module_name, object_type, object_id):
 
     # Get object
     obj = get_object_or_404(module_name, object_type, object_id)
+
     # Apply EDIT_FIELDS & basic field check & is_valid check
-    status, error = obj.check_apply_edit_fields()
-    status, error = (status, error) if status is not True else obj.is_valid()
-    if not status:
-        return redirect_or_jsonify(url='{0}/edit'.format(request.url), error=error)
+    try:
+        obj.check_apply_edit_fields()
+        obj.is_valid()
+
+    except obj.ValidationError as e:
+        return redirect_or_jsonify(error=e.message)
 
     # Save
     obj.save()
@@ -100,7 +105,10 @@ def edit_object(module_name, object_type, object_id):
     for hook in obj.hooks['post_edit']:
         hook()
 
-    return redirect_or_jsonify(success='{0} updated'.format(obj.TITLE))
+    return redirect_or_jsonify(
+        obj.view_url,
+        success='{0} updated'.format(obj.TITLE)
+    )
 
 
 @html_api_route(
@@ -117,9 +125,10 @@ def delete_object(module_name, object_type, object_id):
     obj = get_object_or_404(module_name, object_type, object_id)
 
     # Check pre_delete function
-    status, error = obj.pre_delete()
-    if not status:
-        return redirect_or_jsonify(error=error)
+    try:
+        obj.pre_delete()
+    except obj.DeletionError as e:
+        return redirect_or_jsonify(error=e.message)
 
     # Delete!
     obj.delete()
