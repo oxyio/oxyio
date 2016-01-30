@@ -5,10 +5,10 @@
 from flask import g
 
 from oxyio.app import web_app
-from oxyio.web.util.response import render_or_jsonify
-from oxyio.web.util.user import permissions_required
-from oxyio.web.util.flashes import flash_request
-from oxyio.web.util.websockets import make_websocket_request
+from oxyio.web.response import render_or_jsonify
+from oxyio.web.user import permissions_required
+from oxyio.web.flashes import flash_request
+from oxyio.web.websockets import make_websocket_request
 
 
 @web_app.route('/admin/tasks', methods=['GET'])

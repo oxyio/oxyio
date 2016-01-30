@@ -7,10 +7,11 @@ from jinja2 import TemplateNotFound
 
 from oxyio.app import web_app
 from oxyio.models.user import User, UserGroup
-from oxyio.util.data import get_object_or_404
-from oxyio.web.util.route import html_api_route
-from oxyio.web.util.response import redirect_or_jsonify, render_or_jsonify
-from oxyio.web.util.user import (
+from oxyio.data import get_object_or_404
+from oxyio.web.route import html_api_route
+from oxyio.web.request import get_request_data
+from oxyio.web.response import redirect_or_jsonify, render_or_jsonify
+from oxyio.web.user import (
     has_object_permission, login_required, has_global_objects_permission
 )
 
@@ -89,16 +90,18 @@ def edit_object(module_name, object_type, object_id):
     # Get object
     obj = get_object_or_404(module_name, object_type, object_id)
 
-    # Apply EDIT_FIELDS & basic field check & is_valid check
+    # Get the request data
+    request_data = get_request_data()
+
     try:
-        obj.check_apply_edit_fields()
-        obj.is_valid()
+        # Update the object with our request data
+        obj.edit(request_data)
 
-    except obj.ValidationError as e:
+        # Validate & save the object
+        obj.save()
+
+    except (obj.EditRequestError, obj.ValidationError) as e:
         return redirect_or_jsonify(error=e.message)
-
-    # Save
-    obj.save()
 
     # Post edit & hooks
     obj.post_edit()
@@ -127,6 +130,7 @@ def delete_object(module_name, object_type, object_id):
     # Check pre_delete function
     try:
         obj.pre_delete()
+
     except obj.DeletionError as e:
         return redirect_or_jsonify(error=e.message)
 

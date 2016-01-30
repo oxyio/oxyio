@@ -1,22 +1,27 @@
 // oxy.io
-// Files: oxyio/webpacks/base/main.js
+// File: oxyio/webpacks/base/main.js
 // Desc: the root of the base webpack
 
 // Base oxy.io less
-import './less/base.less';
-import './less/buttons.less';
-import './less/forms.less';
-import './less/header.less';
-import './less/lists.less';
-import './less/loader.less';
-import './less/login.less';
-import './less/messages.less';
-import './less/subheader.less';
-import './less/tables.less';
-import './less/footer.less';
+import 'base/less/base';
+import 'base/less/buttons';
+import 'base/less/forms';
+import 'base/less/header';
+import 'base/less/lists';
+import 'base/less/loader';
+import 'base/less/login';
+import 'base/less/messages';
+import 'base/less/subheader';
+import 'base/less/tables';
+import 'base/less/footer';
+import 'base/less/graphs';
 
 // Base oxy.io js
-import './js/tabs.js';
-import './js/tasks.js';
-import './js/selects.js';
-import './js/messages.js';
+import 'base/js/tabs';
+import 'base/js/tasks';
+import 'base/js/selects';
+import 'base/js/messages';
+import 'base/js/graphs'
+
+// Export shared libs to window
+import 'base/js/exports';

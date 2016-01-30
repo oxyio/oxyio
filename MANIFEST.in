@@ -1,0 +1,9 @@
+# Database migrations
+recursive-include oxyio/migrations *
+
+# Templates & static files (includes compiled webpacks)
+recursive-include oxyio/web/templates *
+recursive-include oxyio/web/static *
+
+# Not sure why this was even present?
+exclude /

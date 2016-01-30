@@ -7,12 +7,12 @@ from jinja2 import TemplateNotFound
 from sqlalchemy.orm import joinedload
 
 from oxyio.app import web_app
-from oxyio.models.base import iter_relations
-from oxyio.util.data import get_object_class_or_404, get_objects
-from oxyio.web.util.route import html_api_route
-from oxyio.web.util.request import in_request_args
-from oxyio.web.util.response import render_or_jsonify, redirect_or_jsonify
-from oxyio.web.util.user import (
+from oxyio.data import get_object_class_or_404, get_objects
+from oxyio.models.object import iter_relations
+from oxyio.web.route import html_api_route
+from oxyio.web.request import in_request_args, get_request_data
+from oxyio.web.response import render_or_jsonify, redirect_or_jsonify
+from oxyio.web.user import (
     get_own_objects,
     login_required, get_current_user,
     has_own_objects_permission, has_any_objects_permission,
@@ -162,19 +162,21 @@ def add_objects(module_name, object_type):
     # Initalize a the object
     new_object = obj()
 
-    # Apply EDIT_FIELDS & basic field check
+    # Get the request data
+    request_data = get_request_data()
+
     try:
-        new_object.check_apply_edit_fields()
-        new_object.is_valid(new=True)
+        # Apply request data to the empty object
+        new_object.edit(request_data)
 
-    except new_object.ValidationError as e:
+        # Set the user_id to the current user
+        new_object.user_id = get_current_user().id
+
+        # Validate & save it
+        new_object.save()
+
+    except (new_object.EditRequestError, new_object.ValidationError) as e:
         return redirect_or_jsonify(error=e.message)
-
-    # Set the user_id to current user
-    new_object.user_id = get_current_user().id
-
-    # Save it!
-    new_object.save()
 
     # Post add & hooks
     new_object.post_add()

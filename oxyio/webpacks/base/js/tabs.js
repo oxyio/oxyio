@@ -1,4 +1,4 @@
-// Oxypanel
+// oxyio
 // File: webpacks/base/js/tabs.js
 // Desc: HTML defined JS-tabs, with loader/unloader attachments
 

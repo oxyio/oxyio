@@ -1,0 +1,49 @@
+{
+    "mappings": {
+        "object_stat": {
+            "_all": {
+                "enabled": false
+            },
+            "properties": {
+                "object_id": {
+                    "type": "integer",
+                    "doc_values": true
+                },
+                "object_module": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "doc_values": true
+                },
+                "object_type": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "doc_values": true
+                },
+                "datetime": {
+                    "type": "date",
+                    "format": "dateOptionalTime",
+                    "doc_values": true
+                },
+                "type": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "doc_values": true
+                },
+                "key": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "doc_values": true
+                },
+                "detail": {
+                    "type": "string",
+                    "index": "not_analyzed",
+                    "doc_values": true
+                },
+                "value": {
+                    "type": "integer",
+                    "doc_values": true
+                }
+            }
+        }
+    }
+}

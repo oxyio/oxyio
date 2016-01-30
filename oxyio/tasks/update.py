@@ -5,7 +5,6 @@
 from .base import Task
 
 
-# Update Oxypanel
 class Update(Task):
     NAME = 'core/update'
 

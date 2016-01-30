@@ -1,12 +1,9 @@
-{% import 'function/flashes.html' as flashes %}
 {% extends 'admin/base.html' %}
 
 {% block content %}
     <div class="block base">
         <form class="block third" method="post" action="{{ url_for('admin_edit_group', group_id=group.id) }}">
             <h2>Editing group {{ group.name }}</h2>
-
-            {{ flashes.messages() }}
 
             <div><label for="name">Name</label>
             <input type="text" value="{{ group.name }}" id="name" name="name" /></div>

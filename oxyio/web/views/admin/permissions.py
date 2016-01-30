@@ -6,8 +6,8 @@ from flask import g, request
 
 from oxyio.app import web_app, db, object_map
 from oxyio.models.user import UserGroup, Permission
-from oxyio.web.util.response import render_or_jsonify, redirect_or_jsonify
-from oxyio.web.util.user import permissions_required
+from oxyio.web.response import render_or_jsonify, redirect_or_jsonify
+from oxyio.web.user import permissions_required
 
 
 @web_app.route('/admin/permissions', methods=['GET'])

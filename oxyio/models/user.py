@@ -5,7 +5,7 @@
 from hashlib import md5
 
 from oxyio.app import db
-from oxyio.util.password import hash_password
+from oxyio.util import hash_password
 
 
 class UserGroup(db.Model):

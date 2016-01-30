@@ -5,7 +5,7 @@
 from flask import render_template
 
 from oxyio.app import web_app
-from oxyio.web.util.user import login_required
+from oxyio.web.user import login_required
 
 
 @web_app.route('/', methods=['GET'])

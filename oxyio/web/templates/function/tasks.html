@@ -1,8 +1,12 @@
 {% import 'function/loaders.html' as loaders %}
 
-{% macro task_subscribe(key, loading_message, end_message='Task completed', error_message='Task errored') %}
+
+{% macro task_subscribe(
+    key, loading_message,
+    end_message='Task completed', error_message='Task errored'
+) %}
     <div
-        class="message info"
+        class="message info subscribe"
         data-task-subscribe-key="{{ key }}"
         data-task-end-message="{{ end_message }}"
         data-task-error-message="{{ error_message }}"

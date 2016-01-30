@@ -1,30 +1,9 @@
-# Server
-#uwsgi==2.0.10
-#gevent==1.0.1
-flask==0.10.1
-flask-uwsgi-websocket==0.2.10
-flask-debugtoolbar==0.9.0
-flask-script==2.0.5
-
-# Database
-mysqlclient==1.3.7
-flask-sqlalchemy==2.0
-
-# Migrations
-alembic==0.7.4
-
-# Hashing
-bcrypt==1.0.2
-
-# Services
-redis==2.10.3
-requests==2.7.0
-elasticsearch==1.4.0
-elasticmapping==1.2
-elasticquery==1.4
-
-# Logging
-coloredlogs==0.5
+# Docs
+spihnx
+sphinx-autodoc
 
 # Debugging
 ipdb
+
+# Testing
+nose

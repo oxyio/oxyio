@@ -1,4 +1,4 @@
-# Oxypanel
+# oxy.io
 # File: views/error.py
 # Desc: error views
 

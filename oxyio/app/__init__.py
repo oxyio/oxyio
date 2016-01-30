@@ -2,6 +2,8 @@
 # File: oxyio/app/__init__.py
 # Desc: the globals file (app, connections, maps)
 
+from os import path
+
 from flask import Flask
 from pytask import PyTask
 from redis import StrictRedis
@@ -30,8 +32,8 @@ task_map = {
 
 # Webserver
 web_app = Flask('oxyio',
-    static_folder='web/static',
-    template_folder='web/templates'
+    static_folder=path.join(settings.ROOT, 'web', 'static'),
+    template_folder=path.join(settings.ROOT, 'web', 'templates')
 )
 web_app.debug = settings.DEBUG
 web_app.secret_key = settings.SECRET
@@ -43,13 +45,13 @@ websocket_app = GeventWebSocket(web_app, timeout=settings.WEBSOCKET_TIMEOUT)
 manager = Manager(web_app, with_default_commands=False)
 
 # Redis
-# TODO: support distributed Redis?
+# TODO: use redis-py-cluster
 redis_client = StrictRedis(*settings.REDIS_NODES[0])
 
 # Elasticsearch
 es_client = Elasticsearch(
     ['{0}:{1}'.format(*node) for node in settings.ES_NODES],
-    connection_class=RequestsHttpConnection
+    connection_class=RequestsHttpConnection, sniff_on_start=False
 )
 
 # Database
@@ -68,6 +70,5 @@ task_app = PyTask(
     redis_client,
     new_queue=settings.REDIS_NEW_QUEUE,
     end_queue=settings.REDIS_END_QUEUE,
-    task_prefix=settings.REDIS_TASK_PREFIX,
-    cleanup_tasks=False
+    task_prefix=settings.REDIS_TASK_PREFIX
 )

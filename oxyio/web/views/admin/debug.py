@@ -8,8 +8,8 @@ from flask import g
 
 from oxyio import settings
 from oxyio.app import web_app, module_map, object_map, websocket_map, item_map, task_map
-from oxyio.web.util.response import render_or_jsonify
-from oxyio.web.util.user import permissions_required
+from oxyio.web.response import render_or_jsonify
+from oxyio.web.user import permissions_required
 
 
 @web_app.route('/admin/debug', methods=['GET'])

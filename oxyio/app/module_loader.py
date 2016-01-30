@@ -7,7 +7,7 @@ from os import path
 from importlib import import_module
 
 from oxyio import settings
-from oxyio.util.log import logger
+from oxyio.log import logger
 
 from . import module_map, object_map, item_map, websocket_map, task_map
 
@@ -19,7 +19,7 @@ def has_module(name):
 
 
 def _load_module_files(name, folder):
-    files = glob(path.join('modules', name, folder, '*.py'))
+    files = glob(path.join(settings.ROOT, name, folder, '*.py'))
 
     for filename in files:
         # Skip __init__.py
@@ -29,7 +29,7 @@ def _load_module_files(name, folder):
         # Load/import the file
         filename = path.basename(filename).replace('.py', '')
         logger.debug('[{0}] Importing {1} file: {2}'.format(name, folder, filename))
-        import_module('modules.{0}.{1}.{2}'.format(name, folder, filename))
+        import_module('oxyio.{0}.{1}.{2}'.format(name, folder, filename))
 
 
 def load_module(name):
@@ -38,8 +38,8 @@ def load_module(name):
     logger.debug('Loading module: {0}'.format(name))
 
     # Import the module
-    module = import_module('modules.{0}'.format(name))
-    import_module('modules.{0}.config'.format(name))
+    module = import_module('oxyio.{0}'.format(name))
+    import_module('oxyio.{0}.config'.format(name))
 
     # Setup the global namespace
     module_map[name] = module

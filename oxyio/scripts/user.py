@@ -2,15 +2,11 @@
 # File: oxyio/scripts/user.py
 # Desc: create users & superusers
 
-from boot import boot_core
-
 from oxyio.app import db, manager
 from oxyio.models.user import User
 
 
 def _add_user(is_keymaster=False):
-    boot_core()
-
     email = raw_input('# Email address: ')
     password = raw_input('# Password: ')
 

@@ -10,10 +10,10 @@ from flask import render_template, redirect, request, session, url_for
 
 from oxyio import settings
 from oxyio.app import web_app, db
+from oxyio.util import hash_password, check_password
 from oxyio.models.user import User
-from oxyio.util.password import hash_password, check_password
-from oxyio.web.util.user import get_current_user, login_required, is_logged_in
-from oxyio.web.util.response import redirect_or_jsonify
+from oxyio.web.user import get_current_user, login_required, is_logged_in
+from oxyio.web.response import redirect_or_jsonify
 
 
 @web_app.route('/logout', methods=['GET'])

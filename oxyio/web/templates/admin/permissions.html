@@ -1,4 +1,3 @@
-{% import 'function/flashes.html' as flashes %}
 {% extends 'admin/base.html' %}
 
 {% macro permission_items(group_id, permissions) %}
@@ -21,8 +20,6 @@
             <a class="button{% if loop.index == 1 %} active{% endif %}" data-tab-link="group-{{ group.id }}">{{ group.name }}</a>
         {% endfor %}</span>
     </h2>
-
-    {{ flashes.messages() }}
 
     <form data-tabs="permissions" method="post">
         {% for group in groups %}

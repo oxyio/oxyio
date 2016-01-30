@@ -1,11 +1,9 @@
 .DS_Store
 *.pyc
 
-# Secret settings!
-settings.py
-
 # Vagrant
 .vagrant/
+.bundle/
 
 # Node
 node_modules/

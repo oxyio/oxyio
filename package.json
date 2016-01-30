@@ -1,17 +1,26 @@
 {
-  "name": "Oxypanel-core",
+  "name": "oxy.io",
   "version": "0.0.0",
-  "description": "Oxypanel's core",
   "author": "Oxygem",
-  "homepage": "https://github.com/Oxypanel/core",
+  "homepage": "https://github.com/oxyio/oxyio",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Oxypanel/core.git"
+    "url": "https://github.com/oxyio/oxyio.git"
+  },
+  "main": "scripts/webpackBootstrap.js",
+  "dependencies": {
+    "lodash": "3.10.1",
+    "react": "0.14.3",
+    "react-dom": "0.14.3",
+    "selected.js": "1.0.0",
+    "velocity-animate": "1.2.2",
+    "urijs": "1.16.1",
+    "whatwg-fetch": "0.11.0"
   },
   "devDependencies": {
-    "babel-core": "6.2.1",
-    "babel-eslint": "4.1.5",
-    "babel-loader": "6.2.0",
+    "babel-core": "6.4.0",
+    "babel-eslint": "4.1.6",
+    "babel-loader": "6.2.1",
     "babel-preset-es2015": "6.1.18",
     "babel-preset-react": "6.1.18",
     "css-loader": "0.9.1",
@@ -24,14 +33,5 @@
     "style-loader": "0.8.3",
     "webpack": "1.5.3",
     "webpack-dev-server": "1.7.0"
-  },
-  "dependencies": {
-    "dygraphs": "1.1.0",
-    "lodash": "3.3.1",
-    "metrics-graphics": "2.2.1",
-    "react": "0.13.1",
-    "react-animate": "1.2.3",
-    "selected.js": "1.0.0",
-    "velocity-animate": "1.2.2"
   }
 }

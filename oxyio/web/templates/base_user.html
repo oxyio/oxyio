@@ -3,13 +3,13 @@
 
 
 {% block body %}
-    <section id="messages">
+    <section id="notifications">
         {{ flashes.messages() }}
+        {{ flashes.subscribes() }}
     </section>
 
     <section id="header"><div class="wrap">
         <h2 id="title">
-            <!--<a href="#"><span class="icon icon-toggle-left"></span></a>-->
             <a href="/">
                 oxy.io
             </a>
@@ -27,9 +27,9 @@
             {% endblock %}
         </ul>
 
-        <a id="logout" href="{{ url_for('logout') }}" title="Logout">
+        <!--<a id="logout" href="{{ url_for('logout') }}" title="Logout">
             <span class="icon icon-sign-out"></span>
-        </a>
+        </a>-->
         <a id="profile" href="{{ url_for('view_profile') }}" title="Edit profile">
             <img src="{{ current_user().gravatar }}" />
             {{ current_user().name }}

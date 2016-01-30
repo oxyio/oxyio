@@ -167,6 +167,7 @@ form {
 
     &.inline {
         width: auto;
+        display: inline-block;
 
         label {
             display: none;
@@ -200,16 +201,31 @@ form {
     .multiselect {
         border: none;
         background: @grey;
-        padding: 5px;
         border-radius: @borderRadius;
 
         &:hover {
             background: @inputHover;
         }
 
+        ul.selected-active {
+            padding: 0 5px;
+            background: transparent;
+
+            li {
+                background: @darkGrey;
+                padding: 2px;
+                border-radius: @borderRadius;
+            }
+        }
+
+        ul.selected-options {
+            padding: 0 7px;
+            background: @grey;
+        }
+
         input {
             background: transparent;
-            padding: 0;
+            margin: 0;
         }
     }
 }

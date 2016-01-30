@@ -8,9 +8,9 @@ from flask import request
 
 from oxyio import settings
 from oxyio.app import web_app, websocket_app, redis_client
-from oxyio.util.data import get_websocket
-from oxyio.util.log import logger
-from oxyio.web.util.user import get_current_user
+from oxyio.data import get_websocket
+from oxyio.log import logger
+from oxyio.web.user import get_current_user
 
 
 # More internal router than view

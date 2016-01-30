@@ -1,5 +1,18 @@
+{% import 'function/tasks.html' as tasks %}
+
+
 {% macro messages() %}
     {% for category, message in get_flashed_messages(with_categories=True) %}
         <div class="message message-{{ loop.index }} {{ category }}">{{ message }}</div>
+    {% endfor %}
+{% endmacro %}
+
+
+{% macro subscribes() %}
+    {% for request_id in get_flashed_task_subscribes() %}
+        {{ tasks.task_subscribe(
+            key=request_id,
+            loading_message='Executing task...'
+        )}}
     {% endfor %}
 {% endmacro %}

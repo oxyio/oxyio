@@ -1,9 +1,8 @@
-{% import 'function/flashes.html' as flashes %}
 {% extends 'admin/base.html' %}
 
 {% block content %}
     <div class="block base">
-        <div class="block twothird">
+        <div class="block two-third">
             <h2 class="top">Users</h2>
 
             <div>
@@ -65,8 +64,6 @@
 
                 <div class="block half">
                     <h3>Add Group</h3>
-                    {{ flashes.messages() }}
-
                     <form class="inline" action="{{ url_for('admin_add_group') }}" method="post">
                         <div><input type="text" name="name" id="name" placeholder="New group name..." /></div>
                         <button class="button green small">Add Group</button>

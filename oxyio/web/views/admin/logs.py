@@ -5,8 +5,8 @@
 from flask import g
 
 from oxyio.app import web_app
-from oxyio.web.util.response import render_or_jsonify
-from oxyio.web.util.user import permissions_required
+from oxyio.web.response import render_or_jsonify
+from oxyio.web.user import permissions_required
 
 
 @web_app.route('/admin/logs', methods=['GET'])

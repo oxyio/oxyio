@@ -1,5 +1,12 @@
 {% extends 'base_user.html' %}
 
+
+{% block js %}
+    {{ super() }}
+    {{ webpack_js('admin') }}
+{% endblock %}
+
+
 {% block modulenav %}
     <li class="red{% if action == 'settings' %} active{% endif %}">
         <a href="{{ url_for('admin_settings') }}">Settings</a>
@@ -19,9 +26,4 @@
     <li{% if action == 'debug' %} class="active"{% endif %}>
         <a href="{{ url_for('admin_debug') }}">Debug</a>
     </li>
-{% endblock %}
-
-{% block js %}
-    {{ super() }}
-    {{ webpack_js('admin') }}
 {% endblock %}

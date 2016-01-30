@@ -30,7 +30,7 @@ _.each($subscribeBoxes, function($subscribeBox) {
 
     websocket.addEventListener('message', function(msg) {
         var data = JSON.parse(msg.data);
-        if(data.event == 'complete')
+        if(data.event == 'success')
             endTaskSubscribe($subscribeBox);
         if(data.event == 'error')
             errorTaskSubscribe($subscribeBox, data.data);

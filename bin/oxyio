@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+
+# oxy.io
+# File: bin/oxyio
+# Desc: start oxy.io
+
+'''
+oxyio
+
+Usage:
+    oxyio --serve [-m <settings>]
+    oxyio --work [-m <settings>]
+    oxyio --manage <command> [<args>... -m <settings>]
+
+Options:
+    --serve         Run a HTTP(S)/websocket server.
+    --work          Run a task worker.
+    -m <settings>   Settings module name, defaults to "settings". Default can be overriden
+                    with the OXYIO_SETTINGS envar.
+    <command>       Management command to run.
+    <args>          Management arguments.
+'''
+
+# Ensure args correct first
+from docopt import docopt
+
+if __name__ == '__main__':
+    args = docopt(__doc__)
+
+
+import sys
+import os
+from os import environ
+
+# Enables running `oxyio --serve` in a directory w/settings.py
+sys.path.append('.')
+
+# Work out settings module
+settings_module = args['-m']
+if settings_module:
+    environ['OXIO_SETTINGS'] = settings_module
+
+# oxy.io bootstrapping utilities
+# import also monkey patches gevent and bootstraps settings ROOT
+from oxyio.boot import (
+    boot, run_web,
+    boot_task, run_task,
+    boot_manage, run_manage
+)
+
+
+# Work out what to boot
+booter = runner = None
+
+# Webserver?
+if args['--serve']:
+    runner = run_web
+
+# Task worker?
+elif args['--work']:
+    booter = boot_task
+    runner = run_task
+
+# Managment?
+elif args['--manage']:
+    # Force unbuffered python
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
+    booter = boot_manage
+    runner = run_manage
+
+    # Patch sys.argv with management commands
+    new_args = ['oxyio', args['<command>']]
+    new_args.extend(args['<args>'])
+    sys.argv = new_args
+
+# Run whatever
+boot(booter, runner)

@@ -5,10 +5,10 @@
 from flask import g, abort, request, url_for
 
 from oxyio.app import web_app, db
+from oxyio.util import hash_password
 from oxyio.models.user import User, UserGroup
-from oxyio.util.password import hash_password
-from oxyio.web.util.user import permissions_required
-from oxyio.web.util.response import render_or_jsonify, redirect_or_jsonify
+from oxyio.web.user import permissions_required
+from oxyio.web.response import render_or_jsonify, redirect_or_jsonify
 
 
 def _get_user_or_404(user_id):
