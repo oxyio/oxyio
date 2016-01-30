@@ -16,6 +16,9 @@ from oxyio.web.user import get_current_user
 # More internal router than view
 @websocket_app.route('/websocket')
 def websocket_request(ws):
+    # Wrap the entire websocket process within the Flask request context - this ensures
+    # a separate database session for the websocket, and that websockets can use Flasks
+    # request/g/etc objects.
     with web_app.request_context(ws.environ):
         # Check user
         user = get_current_user()
@@ -37,13 +40,13 @@ def websocket_request(ws):
             )
             return ws.send('INVALID_USER')
 
-    # Looks like everything's OK, lets load the websocket in question
-    module_name, websocket_name = request_data['websocket'].split('/')
-    websocket_class = get_websocket(module_name, websocket_name)
-    if websocket_class is None:
-        logger.critical('Websocket class not found: {}'.format(websocket_class))
-        return ws.send('INVALID_WEBSOCKET')
+        # Looks like everything's OK, lets load the websocket in question
+        module_name, websocket_name = request_data['websocket'].split('/')
+        websocket_class = get_websocket(module_name, websocket_name)
+        if websocket_class is None:
+            logger.critical('Websocket class not found: {}'.format(websocket_class))
+            return ws.send('INVALID_WEBSOCKET')
 
-    # Start the websocket!
-    data = json.loads(request_data['websocket_data'])
-    websocket_class(data, ws)
+        # Start the websocket!
+        data = json.loads(request_data['websocket_data'])
+        websocket_class(data, ws)

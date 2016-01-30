@@ -9,7 +9,9 @@ from oxyio.log import logger
 
 
 class MetaWebsocket(type):
-    '''Metaclass that attaches Websocket classes to websocket_map.'''
+    '''
+    Metaclass that attaches Websocket classes to websocket_map.
+    '''
 
     def __init__(cls, name, bases, d):
         if name != 'Websocket':

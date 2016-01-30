@@ -4,12 +4,14 @@
 
 from pytask import Task as PyTask
 
-from oxyio.app import task_map
+from oxyio.app import task_map, web_app
 from oxyio.log import logger
 
 
 class MetaTask(type):
-    '''Metaclass that attaches Task classes to task_map.'''
+    '''
+    Metaclass that attaches Task classes to task_map.
+    '''
 
     def __init__(cls, name, bases, d):
         if name != 'Task':
@@ -25,3 +27,12 @@ class MetaTask(type):
 
 class Task(PyTask):
     __metaclass__ = MetaTask
+
+    @staticmethod
+    def provide_context():
+        '''
+        This ensures tasks are run within a Flask app context, such that each gets its own
+        database session.
+        '''
+
+        return web_app.app_context()
