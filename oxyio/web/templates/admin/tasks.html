@@ -1,5 +1,5 @@
 {% extends 'admin/base.html' %}
 
 {% block content %}
-    <div data-tasks="{{ get_flashed_request('task_admin') }}"></div>
+    <div id="tasks" data-tasks="{{ get_flashed_request('task_admin') }}"></div>
 {% endblock %}

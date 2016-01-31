@@ -1,2 +1,4 @@
-import 'admin/js/permissions.js';
+import 'admin/less/tasks';
+
+import 'admin/js/permissions';
 import 'admin/js/tasks';

@@ -54,12 +54,10 @@ class Admin(Websocket):
 
     NAME = 'core/task_admin'
 
+    _old_channel = None
+
     def __init__(self, task_id, ws):
         super(Admin, self).__init__(task_id, ws)
-
-        # Get all task messages from Redis pubsub
-        pattern = '{0}*'.format(task_app.TASK_PREFIX)
-        subscribe(self.on_tasks_event, pattern=pattern)
 
         # Create loop to periodically send down all task info
         loop = gevent.spawn(run_loop, self.send_tasks, 10)
@@ -67,15 +65,32 @@ class Admin(Websocket):
         # Wait until websocket closes
         self.run_forever()
 
-        # Unsubscribe
-        unsubscribe(self.on_tasks_event, pattern=pattern)
+        # Unsubscribe from any task events
+        self.clear_subscribe()
 
         # Stop loop
         loop.kill()
 
-    def on_tasks_event(self, data):
-        # These messages are in the JSON format {event, data}, so will be "double wrapped"
-        # inside a "task_message" event (specific to the TaskAdmin component).
+    def clear_subscribe(self):
+        if self._old_channel:
+            unsubscribe(self.on_task_event, channel=self._old_channel)
+
+    def on_event(self, event, data):
+        if event == 'subscribe_task_id':
+            # Unsubscribe from anything
+            self.clear_subscribe()
+
+            # Subscribe to the new channel
+            new_channel = task_app.helpers.task_key(data['task_id'])
+            subscribe(
+                self.on_task_event,
+                channel=new_channel
+            )
+
+            # Set the new one to be cleared
+            self._old_channel = new_channel
+
+    def on_task_event(self, data):
         self.emit('task_message', data)
 
     def send_tasks(self):

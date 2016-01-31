@@ -17,7 +17,8 @@ export default class TasksAdmin extends Component {
             endTaskIds: [],
             tasks: {},
             // Highlighted/detail task
-            taskId: null
+            taskId: null,
+            taskMessages: []
         }
     }
 
@@ -48,6 +49,10 @@ export default class TasksAdmin extends Component {
                 stateDiff.tasks = data;
                 break;
 
+            case 'task_message':
+                stateDiff.taskMessages = [data].concat(this.state.taskMessages);
+                break;
+
             default:
                 console.log('Unhandled event!', event, data);
         }
@@ -57,8 +62,15 @@ export default class TasksAdmin extends Component {
     }
 
     showTask(taskId) {
+        // Tell the websocket to send the new tasks messages
+        this.socket.emit('subscribe_task_id', {
+            task_id: taskId
+        });
+
+        // Set ID & reset messages
         this.setState({
-            taskId: taskId
+            taskId: taskId,
+            taskMessages: []
         });
     }
 
@@ -88,7 +100,10 @@ export default class TasksAdmin extends Component {
 
         return (
             <div>
-                <h3>{taskId}</h3>
+                <h3>
+                    Task: {taskId}<br />
+                    {task.local == 'true' ? <small>local</small> : ''}
+                </h3>
 
                 <p>
                     Task: <strong>{task.task}</strong><br />
@@ -99,22 +114,46 @@ export default class TasksAdmin extends Component {
         );
     }
 
+    getTaskMessages() {
+        const messages = this.state.taskMessages.map((message) => {
+            message = JSON.parse(message);
+            message = JSON.stringify(message, null, 2);
+            return message;
+        });
+
+        return (
+            <div className='task-messages'>
+                <h3>Task Events</h3>
+                <pre><code>
+                    {messages}
+                </code></pre>
+            </div>
+        );
+    }
+
     render() {
         return (
             <div className='block base'>
                 <div className='block third'>
-                    <h3>New Tasks</h3>
-                    {this.getTaskList(this.state.newTaskIds)}
-
                     <h3>Active Tasks</h3>
                     {this.getTaskList(this.state.activeTaskIds)}
 
-                    <h3>Ended Tasks</h3>
-                    {this.getTaskList(this.state.endTaskIds)}
+                    <div className='block base'>
+                        <div className='block half'>
+                            <h3>New Tasks</h3>
+                            {this.getTaskList(this.state.newTaskIds)}
+                        </div>
+
+                        <div className='block half'>
+                            <h3>Ended Tasks</h3>
+                            {this.getTaskList(this.state.endTaskIds)}
+                        </div>
+                    </div>
                 </div>
 
                 <div className='block two-third'>
                     {this.getTaskInfo()}
+                    {this.getTaskMessages()}
                 </div>
             </div>
         );

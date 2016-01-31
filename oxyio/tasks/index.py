@@ -60,6 +60,7 @@ class IndexStats(Task):
         n_inserted, errors = es_helpers.bulk(es_client, docs)
 
         logger.info('Indexed {0} stats -> ES'.format(n_inserted))
+        self.emit('indexed_documents', n_inserted)
 
         for error in errors:
             logger.error('Error inserting ES doc: {0}'.format(error))

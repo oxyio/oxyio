@@ -48,7 +48,8 @@ class Websocket:
             if data is None:
                 break
             else:
-                self.on_data(data)
+                data = json.loads(data)
+                self.on_event(data['event'], data['data'])
 
     def emit(self, event, data):
         '''Push an event down the websocket.'''
@@ -59,5 +60,5 @@ class Websocket:
         }))
 
     # Ignore input by default
-    def on_data(self, data):
+    def on_event(self, event, data):
         pass

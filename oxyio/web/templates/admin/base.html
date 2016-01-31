@@ -1,6 +1,12 @@
 {% extends 'base_user.html' %}
 
 
+{% block css %}
+    {{ super() }}
+    {{ webpack_css('admin') }}
+{% endblock %}
+
+
 {% block js %}
     {{ super() }}
     {{ webpack_js('admin') }}

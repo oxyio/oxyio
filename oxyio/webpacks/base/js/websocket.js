@@ -10,4 +10,17 @@ export default function OxyWebSocket(requestKey, handler) {
         const data = JSON.parse(message.data);
         handler(data.event, data.data);
     });
+
+    const emit = (event, data) => {
+        const payload = JSON.stringify({
+            event: event,
+            data: data
+        });
+
+        ws.send(payload);
+    }
+
+    return {
+        emit: emit
+    };
 }

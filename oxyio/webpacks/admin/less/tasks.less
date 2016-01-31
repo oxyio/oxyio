@@ -1,0 +1,26 @@
+@import '../../base/less/shared/colours.less';
+
+
+#tasks {
+    ul {
+        padding: 0;
+        background: @grey;
+
+        li {
+            list-style: none;
+            cursor: pointer;
+
+            &:hover {
+                background: @darkGrey;
+            }
+        }
+    }
+
+    pre {
+        max-height: 300px;
+        overflow: auto;
+        overflow: auto;
+        border: 1px solid @darkGrey;
+        word-wrap: break-word;
+    }
+}
