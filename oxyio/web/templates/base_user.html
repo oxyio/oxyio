@@ -11,7 +11,7 @@
     <section id="header"><div class="wrap">
         <h2 id="title">
             <a href="/">
-                oxy.io
+            {{ get_settings().NAME }}
             </a>
         </h2>
 
@@ -48,6 +48,7 @@
     </div></section>
 
     <section id="footer"><div class="wrap">
-        <span class="right">Powered by <a href="#">oxy.io</a></span>
+        <span class="left">Powered by <a href="#">oxy.io</a></span>
+        <span class="right"><a href="{{ url_for('logout') }}">Logout</a></span>
     </div></section>
 {% endblock %}

@@ -14,7 +14,7 @@
         {{ webpack_css('base') }}
     {% endblock %}
 </head>
-<body>
+<body class="{% block body_classes %}{% endblock %}">
     {% block body %}{% endblock %}
 
     {% block js %}
