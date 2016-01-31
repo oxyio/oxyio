@@ -8,8 +8,8 @@
 @import './shared/dimensions.less';
 
 
-ul.tablinks {
-    margin: 0;
+ul.horizontal-tabs {
+    margin: -20px 0 50px 0;
     padding: 0;
 
     li {
@@ -17,21 +17,16 @@ ul.tablinks {
 
         a {
             float: left;
-            border: none;
             padding: 5px;
-            width: 100%;
             background: @grey;
-
-            &:hover {
-                background: @darkGrey;
-            }
+            border: none;
         }
 
         &:first-child a {
-            border-radius: @borderRadius @borderRadius 0 0;
+            border-radius: @borderRadius 0 0 @borderRadius;
         }
         &:last-child a {
-            border-radius: 0 0 @borderRadius @borderRadius;
+            border-radius: 0 @borderRadius @borderRadius 0;
         }
 
         &.active a {
