@@ -22,10 +22,13 @@ def websocket_request(ws):
     with web_app.request_context(ws.environ):
         # Check user
         user = get_current_user()
-        if not user: return ws.send('INVALID_USER')
+        if not user:
+            return ws.send('INVALID_USER')
+
         # Check request key
         request_key = request.args.get('key', None)
-        if not request_key: return ws.send('INVALID_REQUEST_KEY')
+        if not request_key:
+            return ws.send('INVALID_REQUEST_KEY')
 
         request_data = redis_client.hgetall(
             '{0}{1}'.format(settings.REDIS_WEBSOCKET_PREFIX, request_key)
