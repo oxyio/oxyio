@@ -46,9 +46,12 @@ class BaseMeta(DeclarativeMeta):
                 # Configure object config defaults
                 cls._configure()
 
-                # Map the object
                 module_name, object_name = cls.NAME.split('/')
-                object_map[module_name][object_name] = cls
+
+                # Map the object
+                (object_map
+                    .setdefault(module_name, {})
+                )[object_name] = cls
 
                 # Attach split names back on the object
                 cls.MODULE = module_name
@@ -63,10 +66,10 @@ class BaseMeta(DeclarativeMeta):
                 module_name, object_name, item_name = cls.NAME.split('/')
 
                 # Map the item
-                if not item_map[module_name].get(object_name):
-                    item_map[module_name][object_name] = {}
-
-                item_map[module_name][object_name][item_name] = cls
+                (item_map
+                    .setdefault(module_name, {})
+                    .setdefault(object_name, {})
+                )[item_name] = cls
 
                 # Attach split names back on the object
                 cls.MODULE = module_name

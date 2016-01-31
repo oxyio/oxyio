@@ -16,7 +16,11 @@ class MetaWebsocket(type):
     def __init__(cls, name, bases, d):
         if name != 'Websocket':
             module_name, websocket_name = cls.NAME.split('/')
-            websocket_map[module_name][websocket_name] = cls
+
+            # Map the websocket
+            (websocket_map
+                .setdefault(module_name, {})
+            )[websocket_name] = cls
 
             logger.debug('Registered new websocket {0}/{1}'.format(
                 module_name, websocket_name

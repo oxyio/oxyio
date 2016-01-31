@@ -19,7 +19,7 @@ DATABASE_DRIVER = 'mysql+mysqldb'
 DATABASE_HOST = '127.0.0.1'
 DATABASE_PORT = 3306
 
-NAME = 'Oxygem'
+NAME = 'oxy.io'
 
 BCRYPT_ROUNDS = 12
 

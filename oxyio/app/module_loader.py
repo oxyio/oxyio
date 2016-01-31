@@ -9,7 +9,7 @@ from importlib import import_module
 from oxyio import settings
 from oxyio.log import logger
 
-from . import module_map, object_map, item_map, websocket_map, task_map
+from . import module_map
 
 
 def has_module(name):
@@ -41,12 +41,8 @@ def load_module(name):
     module = import_module('oxyio.{0}'.format(name))
     import_module('oxyio.{0}.config'.format(name))
 
-    # Setup the global namespace
+    # Attach to the global module namespace
     module_map[name] = module
-    object_map[name] = {}
-    item_map[name] = {}
-    websocket_map[name] = {}
-    task_map[name] = {}
 
     # Module load?
     if hasattr(module, 'load'):

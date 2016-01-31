@@ -16,7 +16,11 @@ class MetaTask(type):
     def __init__(cls, name, bases, d):
         if name != 'Task':
             module_name, task_name = cls.NAME.split('/')
-            task_map[module_name][task_name] = cls
+
+            # Map the task
+            (task_map
+                .setdefault(module_name, {})
+            )[task_name] = cls
 
             logger.debug('Registered task {0}/{1}'.format(
                 module_name, task_name
