@@ -90,6 +90,12 @@ class IndexStats(Task):
                 body=object_stat_mapping
             )
 
+            # Update the alias
+            es_client.indices.put_alias(
+                name=settings.ES_STATS_INDEX,
+                index='{0}_*'.format(settings.ES_STATS_INDEX),
+            )
+
         # Cache & return
         self.es_index = index_name
         return index_name
