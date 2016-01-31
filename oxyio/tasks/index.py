@@ -3,12 +3,14 @@
 # Desc: a task that batch indexes stats buffered in a Redis queue
 
 import json
+from datetime import date
 
 from elasticsearch import helpers as es_helpers
 
 from oxyio import settings
 from oxyio.log import logger
 from oxyio.app import redis_client, es_client
+from oxyio.mappings.stats import object_stat_mapping
 
 from .base import Task
 
@@ -16,11 +18,15 @@ from .base import Task
 class IndexStats(Task):
     NAME = 'core/index_stats'
 
+    es_index = None
+
     def __init__(self):
         self.doc_buffer = []
 
     def start(self):
-        '''Read stats from the Redis queue and append to internal buffer.'''
+        '''
+        Read stats from the Redis queue and append to internal buffer.
+        '''
 
         while True:
             es_doc = redis_client.brpop(settings.REDIS_INDEX_QUEUE, 5)
@@ -38,13 +44,15 @@ class IndexStats(Task):
         self.index()
 
     def index(self):
-        '''Actually indexes the current doc buffer in ES.'''
+        '''
+        Actually indexes the current doc buffer in ES.
+        '''
 
         logger.debug('Indexing {0} stats -> ES...'.format(len(self.doc_buffer)))
 
         # Make ES docs
         docs = [{
-            '_index': 'oxyio_stats',
+            '_index': self.get_index(),
             '_type': 'object_stat',
             '_source': es_source
         } for es_source in self.doc_buffer]
@@ -58,3 +66,30 @@ class IndexStats(Task):
 
         # Reset the buffer
         self.doc_buffer = []
+
+    def get_index(self):
+        '''
+        Returns the current (daily) index, after ensuring it exists.
+        '''
+
+        # Get the index name
+        today = date.today().strftime('%Y%m%d')
+        index_name = '{0}_{1}'.format(settings.ES_STATS_INDEX, today)
+
+        # Does our cached index check match
+        if self.es_index == index_name:
+            return index_name
+
+        # Check the index exists
+        if not es_client.indices.exists(index=index_name):
+            # Create index, put mappings
+            es_client.indices.create(index=index_name)
+            es_client.indices.put_mapping(
+                index=index_name,
+                doc_type='object_stat',
+                body=object_stat_mapping
+            )
+
+        # Cache & return
+        self.es_index = index_name
+        return index_name
