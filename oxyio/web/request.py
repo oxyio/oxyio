@@ -4,19 +4,6 @@
 
 from flask import g, request
 
-from oxyio.app import web_app, db
-
-
-# Fixes teardown_request not being called in DEBUG
-web_app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
-
-@web_app.teardown_request
-def rollback_on_exception(exception):
-    if exception:
-        db.session.rollback()
-
-    db.session.remove()
-
 
 def _parse_request_form():
     return {

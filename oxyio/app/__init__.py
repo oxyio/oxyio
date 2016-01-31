@@ -37,6 +37,8 @@ web_app = Flask('oxyio',
 )
 web_app.debug = settings.DEBUG
 web_app.secret_key = settings.SECRET
+# Ensures request_teardown functions are called even in debug
+web_app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
 
 # Websocket server
 websocket_app = GeventWebSocket(web_app, timeout=settings.WEBSOCKET_TIMEOUT)
