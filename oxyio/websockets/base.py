@@ -36,20 +36,21 @@ class Websocket:
         self.ws = ws
 
     def run_forever(self):
-        '''
-        Useful for websockets which only push data to the client, so need to remain open
-        while waiting on callbacks
-        '''
-
         while True:
             data = self.ws.receive()
 
             # Break when timeout or closed connection
             if data is None:
                 break
-            else:
-                data = json.loads(data)
-                self.on_event(data['event'], data['data'])
+
+            elif data:
+                try:
+                    data = json.loads(data)
+                    self.on_event(data['event'], data['data'])
+
+                # We ignore other websocket data (pings/etc)
+                except ValueError:
+                    logger.warning('Received dodgy websocket data: "{0}"'.format(data))
 
     def emit(self, event, data):
         '''Push an event down the websocket.'''
