@@ -34,7 +34,7 @@ def get_stat_keys(type_=None, queries=None):
     )
 
     # Attach queries
-    q.query(Query.and_(*queries))
+    q.query(Query.bool(must=queries))
 
     # Attach a terms aggregate
     q.aggregate(Aggregate.terms('key_terms', 'key'))
@@ -112,7 +112,7 @@ def get_stats(
     )
 
     # Attach queries
-    q.query(Query.and_(*queries))
+    q.query(Query.bool(must=queries))
 
     # Add the original top level date histogram
     q.aggregate(top_aggregate)
