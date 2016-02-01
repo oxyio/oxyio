@@ -1,12 +1,14 @@
-{% extends 'base.html' %}
+{% extends 'login.html' %}
+
+{% block title %}{{ status }} {{ error }}{% endblock %}
 
 {% block body %}
     <section id="top"><div class="wrap login">
-        <h2 id="title">{% block error_title %}{% endblock %}</h2>
+        <h2 id="title">{{ status }} {{ error }}</h2>
     </div></section>
 
     <section id="login"><div class="wrap login">
-        <div class="message {% block error_class %}{% endblock %}">{% block error_message %}{% endblock %}</div>
+        <div class="message warning">{{ error_message }}</div>
         <a class="left" href="/"><span class="icon icon-home"></span> Return Home</a>
         {% if request.referrer %}
             <a class="right" href="{{ request.referrer }}"><span class="icon icon-chevron-left small"></span> Go back</a>

@@ -2,31 +2,45 @@
 # File: views/error.py
 # Desc: error views
 
-from flask import render_template, abort
+from flask import abort
 
 from oxyio import settings
 from oxyio.app import web_app
+from oxyio.web.response import render_or_jsonify
+
+
+def _handle_error_view(code, e):
+    return render_or_jsonify(
+        'error.html'.format(code),
+        status=code,
+        error=e.name,
+        error_message=e.description
+    ), code
 
 
 @web_app.errorhandler(401)
 def error_unauthorized(e):
-    return render_template('error/401.html', error=e), 401
+    return _handle_error_view(401, e)
+
 
 @web_app.errorhandler(403)
 def error_forbidden(e):
-    return render_template('error/403.html', error=e), 403
+    return _handle_error_view(403, e)
+
 
 @web_app.errorhandler(404)
 def error_not_found(e):
-    return render_template('error/404.html', error=e), 404
+    return _handle_error_view(404, e)
+
 
 @web_app.errorhandler(405)
 def error_not_allowed(e):
-    return render_template('error/405.html', error=e), 405
+    return _handle_error_view(405, e)
+
 
 @web_app.errorhandler(500)
 def error_server_error(e):
-    return render_template('error/500.html', error=e), 500
+    return _handle_error_view(500, e)
 
 
 if settings.DEBUG:
