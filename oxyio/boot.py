@@ -105,6 +105,8 @@ def boot_web():
         # Register blueprint
         web_app.register_blueprint(module_blueprint)
 
+    settings.BOOTED = 'web'
+
 
 def run_web():
     '''Run uWSGI.'''
@@ -113,10 +115,10 @@ def run_web():
         app='oxyio.boot:web_app',
         gevent=settings.GEVENT,
         port=settings.PORT,
-        lazy=True,
         **{
             # Make uWSGI fail if it can't load the app
-            'need-app': True
+            'need-app': True,
+            'lazy-apps': True
         }
     )
 
@@ -139,6 +141,8 @@ def boot_task():
     for _, tasks in task_map.iteritems():
         for _, task_class in tasks.iteritems():
             task_app.add_task(task_class)
+
+    settings.BOOTED = 'task'
 
 
 def run_task():
