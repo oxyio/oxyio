@@ -28,7 +28,9 @@ from oxyio.app.module_loader import load_module
 
 
 def boot_core():
-    '''Bootstraps/loads core models/websockets/tasks.'''
+    '''
+    Bootstraps/loads core models/websockets/tasks.
+    '''
 
     logger.debug('Loading core')
 
@@ -38,20 +40,26 @@ def boot_core():
 
 
 def boot_all_modules():
-    '''Bootstraps/loads all the modules.'''
+    '''
+    Bootstraps/loads all the modules.
+    '''
 
     for name in settings.MODULES:
         load_module(name)
 
 
 def boot_manage():
-    '''Bootstraps the manager.'''
+    '''
+    Bootstraps the manager.
+    '''
 
     from oxyio.scripts import user, database  # noqa
 
 
 def run_manage():
-    '''Run management.'''
+    '''
+    Run management.
+    '''
 
     from flask.ext.script import Shell
 
@@ -62,7 +70,9 @@ def run_manage():
 
 
 def boot_web():
-    '''Bootstraps the webserver.'''
+    '''
+    Bootstraps the webserver.
+    '''
 
     # Debug toolbar
     from flask_debugtoolbar import DebugToolbarExtension
@@ -87,6 +97,8 @@ def boot_web():
         settings as _settings
     )
 
+    # Make object(s) views
+
     # Make module blueprints
     for name, module in module_map.iteritems():
         # Make flask blueprint
@@ -109,7 +121,9 @@ def boot_web():
 
 
 def run_web():
-    '''Run uWSGI.'''
+    '''
+    Run the web(socket) server by starting uWSGI.
+    '''
 
     web_app.run(
         app='oxyio.boot:web_app',
@@ -124,7 +138,9 @@ def run_web():
 
 
 def boot_task():
-    '''Bootstraps the task worker.'''
+    '''
+    Bootstraps the task worker.
+    '''
 
     # Pre-start Monitor & Cleanup tasks
     from pytask.tasks import Monitor, Cleanup
@@ -146,7 +162,9 @@ def boot_task():
 
 
 def run_task():
-    '''Run pytask.'''
+    '''
+    Run the task worker by starting pytask.
+    '''
 
     task_app.run()
 

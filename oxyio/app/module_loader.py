@@ -13,7 +13,9 @@ from . import module_map
 
 
 def has_module(name):
-    '''Checks if a module is present.'''
+    '''
+    Checks if a module is present.
+    '''
 
     return name in settings.MODULES
 
@@ -33,7 +35,9 @@ def _load_module_files(name, folder):
 
 
 def load_module(name):
-    '''Load a module.'''
+    '''
+    Load a module.
+    '''
 
     logger.debug('Loading module: {0}'.format(name))
 

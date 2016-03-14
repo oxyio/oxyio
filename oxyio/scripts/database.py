@@ -18,7 +18,7 @@ def _get_module_config(module_name):
 
     # If module is actually oxy.io core
     if module_name == 'core':
-        versions_dir = path.join('oxyio', 'migrations')
+        versions_dir = path.join(settings.ROOT, 'migrations')
 
     # Otherwise load the module
     else:

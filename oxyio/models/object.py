@@ -137,7 +137,9 @@ class Object(Base):
 
     @property
     def notes(self):
-        '''Lazily SELECT notes for this object.'''
+        '''
+        Lazily SELECT notes for this object.
+        '''
 
         return Note.query.filter_by(
             object_id=self.id,
@@ -181,7 +183,9 @@ class Object(Base):
         return string_type, python_type, arg
 
     def _config_to_form(self, fields):
-        '''Turn device config fields into form tuples.'''
+        '''
+        Turn device config fields into form tuples.
+        '''
 
         form = []
         for field, options in fields:
@@ -221,7 +225,9 @@ class Object(Base):
     #
 
     def build_filter_form(self):
-        '''Builds the objects filter/search form for macro in ``function/forms.html``.'''
+        '''
+        Builds the objects filter/search form for macro in ``function/forms.html``.
+        '''
 
         # Uses just list fields
         form = self._config_to_form(self.FILTER_FIELDS)
@@ -229,7 +235,9 @@ class Object(Base):
         return form
 
     def build_form(self):
-        '''Builds an object edit/add form for macro in ``function/forms.html``.'''
+        '''
+        Builds an object edit/add form for macro in ``function/forms.html``.
+        '''
 
         # Normal edit fields + name
         form = self._config_to_form([('name', {})] + list(self.EDIT_FIELDS))
@@ -279,7 +287,9 @@ class Object(Base):
         self.check_apply_edit(request_data)
 
     def check_apply_edit(self, request_data):
-        '''Custom check/apply request data for fields not in ``self.EDIT_FIELDS``.'''
+        '''
+        Custom check/apply request data for fields not in ``self.EDIT_FIELDS``.
+        '''
         pass
 
     def check_apply_edit_fields(self, request_data):
@@ -401,7 +411,9 @@ class Object(Base):
     #
 
     def serialise(self):
-        '''For outputting to JSON in API-mode.'''
+        '''
+        For outputting to JSON in API-mode.
+        '''
 
         return {
             key: getattr(self, key, None)
@@ -409,14 +421,18 @@ class Object(Base):
         }
 
     def save(self):
-        '''Validate ``Object``s before saving.'''
+        '''
+        Validate ``Object``s before saving.
+        '''
 
         self.is_valid()
 
         super(Object, self).save()
 
     def delete(self):
-        '''Delete ``Note``s attached to this ``Object``.'''
+        '''
+        Delete ``Note``s attached to this ``Object``.
+        '''
 
         for note in self.notes:
             db.session.delete(note)
@@ -458,5 +474,8 @@ class Object(Base):
 
     @classmethod
     def add_hook(cls, type, callback):
-        '''Add hooks to apply to all object sub-classes of this'''
+        '''
+        Add hooks to apply to all object sub-classes of this.
+        '''
+
         cls.hooks[type].append(callback)

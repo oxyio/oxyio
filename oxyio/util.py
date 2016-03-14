@@ -2,6 +2,7 @@
 # File: oxyio/util/util.py
 # Desc: general utilities!
 
+import hmac
 from hashlib import sha512
 from functools import wraps
 
@@ -12,26 +13,31 @@ from oxyio.exceptions import OxyioError
 
 
 def check_password(password, hashed):
-    '''Checks a password matches its hashed (database) value.'''
+    '''
+    Checks a password matches its hashed (database) value in constant time.
+    '''
 
     password = sha512(password).hexdigest()
-    return hashpw(password, hashed) == hashed
+    return hmac.compare_digest(
+        hashpw(password, hashed),
+        hashed
+    )
 
 
 def hash_password(password):
-    '''Turn a password into a hash.'''
+    '''
+    Turn a password into a hash.
+    '''
 
     password = sha512(password).hexdigest()
     return hashpw(password, gensalt(settings.BCRYPT_ROUNDS))
 
 
-def since_datetime(since):
-    '''Parses human time deltas (1m, 1h, 1d, 1w, etc) and returns now - that.'''
-
-    pass
-
-
 def server_only(func):
+    '''
+    Decorator that prevents a function from being called in server mode.
+    '''
+
     @wraps(func)
     def decorated(*args, **kwargs):
         if settings.BOOTED != 'web':
@@ -42,6 +48,9 @@ def server_only(func):
 
 
 def worker_only(func):
+    '''
+    Decorator that prevents a function from being called in worker mode.
+    '''
     @wraps(func)
     def decorated(*args, **kwargs):
         if settings.BOOTED != 'task':
