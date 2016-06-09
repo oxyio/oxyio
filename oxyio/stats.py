@@ -17,7 +17,9 @@ STAT_TYPE_TO_AGG = {
 
 
 def get_stat_keys(type_=None, queries=None):
-    '''Get unique stat keys.'''
+    '''
+    Get unique stat keys.
+    '''
 
     if queries is None:
         queries = []
@@ -52,7 +54,9 @@ def get_stats(
     type_=None, keys=None, details=None, queries=None,
     stat_type='total', interval='1m', since='now-24h', to='now'
 ):
-    '''Get stats from ES.'''
+    '''
+    Get stats from ES.
+    '''
 
     if queries is None:
         queries = []
@@ -185,9 +189,11 @@ def get_object_stats(obj, **kwargs):
 
 
 def index_object_stats(obj, stats, time=None):
-    '''Push stats to the Redis index queue.'''
+    '''
+    Push stats to the Redis index queue.
+    '''
 
-    iso_now = datetime.now().replace(microsecond=0).isoformat()
+    iso_now = datetime.utcnow().replace(microsecond=0).isoformat()
 
     for stat in stats:
         stat.update({
