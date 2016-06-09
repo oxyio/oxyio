@@ -209,15 +209,14 @@ def create_object_views(app, api_app, cls):
         app=app, api_app=api_app
     )(login_required(lambda object_id: view_object(object_id, *args)))
 
-    # Create GET edit view
-    html_api_route(
+    # Create view edit view
+    app.route(
         '/{0}/<int:object_id>/edit'.format(cls.OBJECT),
         methods=['GET'],
-        endpoint='view_edit_{0}'.format(cls.OBJECT),
-        app=app, api_app=api_app
+        endpoint='view_edit_{0}'.format(cls.OBJECT)
     )(login_required(lambda object_id: view_edit_object(object_id, *args)))
 
-    # Create POST edit view
+    # Create edit view
     html_api_route(
         '/{0}/<int:object_id>/edit'.format(cls.OBJECT),
         methods=['POST'],
@@ -225,15 +224,14 @@ def create_object_views(app, api_app, cls):
         app=app, api_app=api_app
     )(login_required(lambda object_id: edit_object(object_id, *args)))
 
-    # Create GET owner view
-    html_api_route(
+    # Create view owner view
+    app.route(
         '/{0}/<int:object_id>/owner'.format(cls.OBJECT),
         methods=['GET'],
-        endpoint='view_owner_{0}'.format(cls.OBJECT),
-        app=app, api_app=api_app
+        endpoint='view_owner_{0}'.format(cls.OBJECT)
     )(login_required(lambda object_id: view_owner_object(object_id, *args)))
 
-    # Create POST owner view
+    # Create owner view
     html_api_route(
         '/{0}/<int:object_id>/owner'.format(cls.OBJECT),
         methods=['POST'],

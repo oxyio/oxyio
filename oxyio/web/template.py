@@ -2,7 +2,8 @@
 # File: oxyio/includes/web/template.py
 # Desc: template functions
 
-from flask import Markup, g, url_for
+from werkzeug.routing import BuildError
+from flask import Markup, g, url_for, request
 
 from oxyio import settings
 from oxyio.app import web_app, module_map, object_map
@@ -173,6 +174,19 @@ def module_nav():
     return Markup(''.join(links))
 
 web_app.jinja_env.globals['module_nav'] = module_nav
+
+
+def get_api_url():
+    if '.' in request.endpoint:
+        module, endpoint = request.endpoint.split('.')
+
+        try:
+            return url_for('{0}_api.{1}'.format(module, endpoint), **request.view_args)
+
+        except BuildError:
+            pass
+
+web_app.jinja_env.globals['get_api_url'] = get_api_url
 
 
 def webpack(name, extension):

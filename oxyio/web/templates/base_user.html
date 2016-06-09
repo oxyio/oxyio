@@ -48,7 +48,17 @@
     </div></section>
 
     <section id="footer"><div class="wrap">
-        <span class="left">Powered by <a href="#">oxy.io</a></span>
-        <span class="right"><a href="{{ url_for('logout') }}">Logout</a></span>
+        <span class="left">
+            Powered by <a href="#">oxy.io</a> -
+            <a href="#">Docs</a>
+        </span>
+
+        <span class="right">
+            {% set api_url = get_api_url() %}
+            {% if api_url %}
+                <a href="{{ api_url }}">API Version</a> -
+            {% endif %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </span>
     </div></section>
 {% endblock %}

@@ -33,7 +33,7 @@
                 <li><a class="red" href="{{ url_for('.list_all_{0}s'.format(objects_type)) }}">View all</a></li>
             {% endif %}
             {% if has_global_objects_permission(module_name, objects_type, 'Add') %}
-                <li><a class="red" href="{# url_for('view_add_objects', module_name=module_name, objects_type=objects_type) #}">Add {{ object_name|lower }}</a></li>
+                <li><a class="red" href="{{ url_for('.add_{0}s'.format(objects_type)) }}">Add {{ object_name|lower }}</a></li>
             {% endif %}
         </ul>
     </div></section>

@@ -205,12 +205,11 @@ def create_objects_views(app, api_app, cls):
         app=app, api_app=api_app
     )(login_required(lambda: list_all_objects(*args)))
 
-    # Create GET add view
-    html_api_route(
+    # Create view add view
+    app.route(
         '/{0}s/add'.format(cls.OBJECT),
         methods=['GET'],
-        endpoint='view_add_{0}s'.format(cls.OBJECT),
-        app=app, api_app=api_app
+        endpoint='view_add_{0}s'.format(cls.OBJECT)
     )(login_required(lambda: view_add_objects(*args)))
 
     # Create POST add view

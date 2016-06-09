@@ -7,9 +7,9 @@
         <h1>Add new {{ object_name }}</h1>
 
         <ul id="links">
-            <li><a href="{{ url_for('list_objects', module_name=module_name, objects_type=objects_type) }}">View own</a></li>
+            <li><a href="{{ url_for('.list_{0}s'.format(objects_type)) }}">View own</a></li>
             {% if has_any_objects_permission(module_name, objects_type, 'view') %}
-                <li><a class="red" href="{{ url_for('list_all_objects', module_name=module_name, objects_type=objects_type) }}">View all</a></li>
+                <li><a class="red" href="{{ url_for('.list_all_{0}s'.format(objects_type)) }}">View all</a></li>
             {% endif %}
         </ul>
     </div></section>
