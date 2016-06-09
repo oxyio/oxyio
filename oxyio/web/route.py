@@ -11,7 +11,7 @@ from oxyio.app import web_app
 
 @web_app.before_request
 def set_api_mode():
-    g.api = request.endpoint and request.endpoint.startswith('api_')
+    g.api = request.endpoint and '_api' in request.endpoint
 
 
 def html_api_route(url, **kwargs):
