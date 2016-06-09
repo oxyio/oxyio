@@ -2,11 +2,10 @@
 # File: oxyio/views/objects.py
 # Desc: list & add objects
 
-from flask import abort, request
+from flask import abort, request, g
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import joinedload
 
-from oxyio.app import web_app
 from oxyio.data import get_object_class_or_404, get_objects
 from oxyio.models.object import iter_relations
 from oxyio.web.route import html_api_route
@@ -52,12 +51,16 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
             objects = objects.options(joinedload(field))
 
     # Apply any filters
+    filtered = False
+
     for (field, _) in obj.FILTER_FIELDS:
         if in_request_args(field):
+            filtered = True
             objects = _filter_field(objects, obj, field, request.args[field])
 
     # Name filter
     if 'name' in request.args and len(request.args['name']) > 0:
+        filtered = True
         objects = objects.filter(
             obj.name.like('%{0}%'.format(request.args['name']))
         )
@@ -75,7 +78,8 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
         'list_relations': list(iter_relations(obj.LIST_RELATIONS)),
         'list_mrelations': list(iter_relations(obj.LIST_MRELATIONS)),
         'filter_form': filter_form,
-        'action': 'all' if is_all else 'own'
+        'action': 'all' if is_all else 'own',
+        'filtered': filtered
     },
         module_name=module_name,
         objects_type=objects_type,
@@ -83,14 +87,25 @@ def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
     )
 
 
-@html_api_route(
-    '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/all',
-    methods=['GET']
-)
-@login_required
+def list_objects(module_name, objects_type):
+    if not has_own_objects_permission(module_name, objects_type, 'view'):
+        return abort(403)
+
+    g.module = module_name
+    g.object = objects_type
+
+    obj = get_object_class_or_404(module_name, objects_type)
+    objects = get_own_objects(module_name, objects_type)
+
+    return _do_list_objects(module_name, objects_type, obj, objects)
+
+
 def list_all_objects(module_name, objects_type):
     if not has_any_objects_permission(module_name, objects_type, 'view'):
         return abort(403)
+
+    g.module = module_name
+    g.object = objects_type
 
     obj = get_object_class_or_404(module_name, objects_type)
 
@@ -100,30 +115,13 @@ def list_all_objects(module_name, objects_type):
     return _do_list_objects(module_name, objects_type, obj, objects, is_all=True)
 
 
-@html_api_route(
-    '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s',
-    methods=['GET']
-)
-@login_required
-def list_objects(module_name, objects_type):
-    if not has_own_objects_permission(module_name, objects_type, 'view'):
-        return abort(403)
-
-    obj = get_object_class_or_404(module_name, objects_type)
-    objects = get_own_objects(module_name, objects_type)
-
-    return _do_list_objects(module_name, objects_type, obj, objects)
-
-
-@web_app.route(
-    '/<string:module_name>/<regex("[a-zA-Z_]+"):objects_type>s/add',
-    methods=['GET']
-)
-@login_required
 def view_add_objects(module_name, objects_type):
     # Check permission (can't use decorator as need object_type)
     if not has_global_objects_permission(module_name, objects_type, 'Add'):
         return abort(403)
+
+    g.module = module_name
+    g.object = objects_type
 
     # Get object class
     obj = get_object_class_or_404(module_name, objects_type)
@@ -146,15 +144,13 @@ def view_add_objects(module_name, objects_type):
         return render_or_jsonify('object/add.html', **data)
 
 
-@html_api_route(
-    '/<string:module_name>/<regex("[a-zA-Z_]+"):object_type>s/add',
-    methods=['POST']
-)
-@login_required
 def add_objects(module_name, object_type):
     # Check permission (can't use decorator as need object_type)
     if not has_global_objects_permission(module_name, object_type, 'Add'):
         return abort(403)
+
+    g.module = module_name
+    g.object = object_type
 
     # Get object class
     obj = get_object_class_or_404(module_name, object_type)
@@ -188,3 +184,39 @@ def add_objects(module_name, object_type):
         new_object.view_url,
         success='{0} Added'.format(obj.TITLE)
     )
+
+
+def create_objects_views(app, api_app, cls):
+    args = (cls.MODULE, cls.OBJECT)
+
+    # Create list view
+    html_api_route(
+        '/{0}s'.format(cls.OBJECT),
+        methods=['GET'],
+        endpoint='list_{0}s'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda: list_objects(*args)))
+
+    # Create list all view
+    html_api_route(
+        '/{0}s/all'.format(cls.OBJECT),
+        methods=['GET'],
+        endpoint='list_all_{0}s'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda: list_all_objects(*args)))
+
+    # Create GET add view
+    html_api_route(
+        '/{0}s/add'.format(cls.OBJECT),
+        methods=['GET'],
+        endpoint='view_add_{0}s'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda: view_add_objects(*args)))
+
+    # Create POST add view
+    html_api_route(
+        '/{0}s/add'.format(cls.OBJECT),
+        methods=['POST'],
+        endpoint='add_{0}s'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda: add_objects(*args)))

@@ -21,7 +21,7 @@ settings.load_module(settings_module)
 from oxyio.log import logger
 
 # Import the base task/web apps
-from oxyio.app import web_app, task_app, module_map, task_map
+from oxyio.app import web_app, task_app, module_map, object_map, task_map
 
 # Load/import all modules
 from oxyio.app.module_loader import load_module
@@ -88,7 +88,7 @@ def boot_web():
 
     # Load core web views
     from oxyio.web.views import (  # noqa
-        dashboard, account, error, object, objects, websocket
+        dashboard, account, error, websocket
     )
 
     # Load admin web views
@@ -97,25 +97,37 @@ def boot_web():
         settings as _settings
     )
 
-    # Make object(s) views
+    from oxyio.web.views.object import create_object_views
+    from oxyio.web.views.objects import create_objects_views
 
     # Make module blueprints
     for name, module in module_map.iteritems():
         # Make flask blueprint
-        module_blueprint = Blueprint(name, name,
+        module_app = Blueprint(name, name,
             url_prefix='/{0}'.format(name),
             static_folder='{0}/{1}/web/static'.format(web_app.root_path, name),
             template_folder='{0}/{1}/web/templates'.format(web_app.root_path, name)
         )
 
+        api_name = '{0}_api'.format(name)
+        module_api_app = Blueprint(api_name, api_name,
+            url_prefix='/api/v1/{0}'.format(name)
+        )
+
+        # Make object(s) views
+        for _, obj_cls in object_map[name].iteritems():
+            create_object_views(module_app, module_api_app, obj_cls)
+            create_objects_views(module_app, module_api_app, obj_cls)
+
         # Apply custom module routes
         if hasattr(module.config, 'ROUTES'):
             for (url, methods, func) in module.config.ROUTES:
                 logger.debug('[{0}] Adding module URL rule: {1} -> {2}'.format(name, url, func))
-                module_blueprint.add_url_rule(url, methods=methods, view_func=func)
+                module_app.add_url_rule(url, methods=methods, view_func=func)
 
         # Register blueprint
-        web_app.register_blueprint(module_blueprint)
+        web_app.register_blueprint(module_app)
+        web_app.register_blueprint(module_api_app)
 
     settings.BOOTED = 'web'
 

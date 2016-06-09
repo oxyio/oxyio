@@ -8,7 +8,7 @@
             {{ forms.fields(edit_form, object) }}
 
             <button class="button green">Update</button>
-            <small><a href="{{ url_for('view_object', module_name=module_name, object_type=object_type, object_id=object.id) }}">back to: {{ object.name }}</a></small>
+            <small><a href="{{ url_for('.view_{0}'.format(object_type), object_id=object.id) }}">back to: {{ object.name }}</a></small>
 
             {{ csrf_input() }}
         </form>

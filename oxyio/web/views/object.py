@@ -2,10 +2,9 @@
 # File: oxyio/views/object.py
 # Desc: Flask routes for internal object calls
 
-from flask import abort, request
+from flask import abort, request, g
 from jinja2 import TemplateNotFound
 
-from oxyio.app import web_app
 from oxyio.models.user import User, UserGroup
 from oxyio.data import get_object_or_404
 from oxyio.web.route import html_api_route
@@ -16,15 +15,13 @@ from oxyio.web.user import (
 )
 
 
-@html_api_route(
-    '/<string:module_name>/<string:object_type>/<int:object_id>',
-    methods=['GET']
-)
-@login_required
-def view_object(module_name, object_type, object_id):
+def view_object(object_id, module_name, object_type):
     # Check permission (can't use decorator as need object_type)
     if not has_object_permission(module_name, object_type, object_id, 'view'):
         return abort(403)
+
+    g.module = module_name
+    g.object = object_type
 
     # Get object
     obj = get_object_or_404(module_name, object_type, object_id)
@@ -41,15 +38,13 @@ def view_object(module_name, object_type, object_id):
     )
 
 
-@web_app.route(
-    '/<string:module_name>/<string:object_type>/<int:object_id>/edit',
-    methods=['GET']
-)
-@login_required
-def view_edit_object(module_name, object_type, object_id):
+def view_edit_object(object_id, module_name, object_type):
     # Check permission (can't use decorator as need object_type)
     if not has_object_permission(module_name, object_type, object_id, 'edit'):
         return abort(403)
+
+    g.module = module_name
+    g.object = object_type
 
     # Get object
     obj = get_object_or_404(module_name, object_type, object_id)
@@ -77,15 +72,13 @@ def view_edit_object(module_name, object_type, object_id):
         return render_or_jsonify('object/edit.html', **data)
 
 
-@html_api_route(
-    '/<string:module_name>/<string:object_type>/<int:object_id>/edit',
-    methods=['POST']
-)
-@login_required
-def edit_object(module_name, object_type, object_id):
+def edit_object(object_id, module_name, object_type):
     # Check permission
     if not has_object_permission(module_name, object_type, object_id, 'edit'):
         return abort(403)
+
+    g.module = module_name
+    g.object = object_type
 
     # Get object
     obj = get_object_or_404(module_name, object_type, object_id)
@@ -114,15 +107,13 @@ def edit_object(module_name, object_type, object_id):
     )
 
 
-@html_api_route(
-    '/<string:module_name>/<string:object_type>/<int:object_id>/delete',
-    methods=['POST']
-)
-@login_required
-def delete_object(module_name, object_type, object_id):
+def delete_object(object_id, module_name, object_type):
     # Check permission
     if not has_global_objects_permission(module_name, object_type, 'delete'):
         return abort(403)
+
+    g.module = module_name
+    g.object = object_type
 
     # Get object
     obj = get_object_or_404(module_name, object_type, object_id)
@@ -143,15 +134,13 @@ def delete_object(module_name, object_type, object_id):
         hook()
 
 
-@web_app.route(
-    '/<string:module_name>/<string:object_type>/<int:object_id>/owner',
-    methods=['GET']
-)
-@login_required
-def view_owner_object(module_name, object_type, object_id):
+def view_owner_object(object_id, module_name, object_type):
     # Check permission (can't use decorator as need object_type)
     if not has_global_objects_permission(module_name, object_type, 'owner'):
         return abort(403)
+
+    g.module = module_name
+    g.object = object_type
 
     # Get object
     obj = get_object_or_404(module_name, object_type, object_id)
@@ -171,15 +160,13 @@ def view_owner_object(module_name, object_type, object_id):
     )
 
 
-@html_api_route(
-    '/<string:module_name>/<string:object_type>/<int:object_id>/owner',
-    methods=['POST']
-)
-@login_required
-def owner_object(module_name, object_type, object_id):
+def owner_object(object_id, module_name, object_type):
     # Check permission
     if not has_global_objects_permission(module_name, object_type, 'owner'):
         return abort(403)
+
+    g.module = module_name
+    g.object = object_type
 
     # Check user and/or group exist
     user_id, group_id = request.form.get('user_id'), request.form.get('group_id')
@@ -200,29 +187,75 @@ def owner_object(module_name, object_type, object_id):
     return redirect_or_jsonify(success='{0} owner changed'.format(obj.TITLE))
 
 
-@html_api_route(
-    '/<string:module_name>/<string:object_type>/<int:object_id>/<string:func_name>',
-    methods=['GET', 'POST']
-)
-@login_required
-def custom_function_object(module_name, object_type, object_id, func_name):
+def custom_function_object(object_id, view_func, permission, module_name, object_type):
     # Get object from module
     obj = get_object_or_404(module_name, object_type, object_id)
-
-    # Try to find the route
-    func_name = '/{0}'.format(func_name)
-    route_i = [i for i, v in enumerate(obj.ROUTES) if v[0] == func_name]
-    if not route_i:
-        return abort(404)
-
-    _, methods, func, permission = obj.ROUTES[route_i[0]]
 
     # Check permission
     if not has_object_permission(module_name, object_type, object_id, permission):
         return abort(403)
 
-    # Wrong method? cya
-    if request.method not in methods:
-        return abort(405)
+    return view_func(obj)
 
-    return func(obj)
+
+def create_object_views(app, api_app, cls):
+    args = (cls.MODULE, cls.OBJECT)
+
+    # Create view view
+    html_api_route(
+        '/{0}/<int:object_id>'.format(cls.OBJECT),
+        methods=['GET'],
+        endpoint='view_{0}'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda object_id: view_object(object_id, *args)))
+
+    # Create GET edit view
+    html_api_route(
+        '/{0}/<int:object_id>/edit'.format(cls.OBJECT),
+        methods=['GET'],
+        endpoint='view_edit_{0}'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda object_id: view_edit_object(object_id, *args)))
+
+    # Create POST edit view
+    html_api_route(
+        '/{0}/<int:object_id>/edit'.format(cls.OBJECT),
+        methods=['POST'],
+        endpoint='edit_{0}'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda object_id: edit_object(object_id, *args)))
+
+    # Create GET owner view
+    html_api_route(
+        '/{0}/<int:object_id>/owner'.format(cls.OBJECT),
+        methods=['GET'],
+        endpoint='view_owner_{0}'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda object_id: view_owner_object(object_id, *args)))
+
+    # Create POST owner view
+    html_api_route(
+        '/{0}/<int:object_id>/owner'.format(cls.OBJECT),
+        methods=['POST'],
+        endpoint='owner_{0}'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda object_id: owner_object(object_id, *args)))
+
+    # Create delete view
+    html_api_route(
+        '/{0}/<int:object_id>/delete'.format(cls.OBJECT),
+        methods=['POST'],
+        endpoint='delete_{0}'.format(cls.OBJECT),
+        app=app, api_app=api_app
+    )(login_required(lambda object_id: delete_object(object_id, *args)))
+
+    # Add custom object routes
+    for name, methods, view_func, permission in cls.ROUTES:
+        html_api_route(
+            '/{0}/<int:object_id>/{1}'.format(cls.OBJECT, name),
+            methods=methods,
+            endpoint='{0}_{1}'.format(cls.OBJECT, name),
+            app=app, api_app=api_app
+        )(login_required(lambda object_id: custom_function_object(
+            object_id, view_func, permission, *args
+        )))

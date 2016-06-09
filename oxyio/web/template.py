@@ -78,7 +78,7 @@ def _module_data():
         name = module.config.TITLE
         color = module.config.COLOR
         icon = module.config.ICON
-        url = url_for('{}.dashboard'.format(module_name))
+        url = url_for('{0}.dashboard'.format(module_name))
 
     return name, color, icon, url
 
@@ -164,7 +164,7 @@ def module_nav():
     links = []
     for object_name, object_class in objects.iteritems():
         name = object_class.TITLES
-        url = url_for('list_objects', module_name=g.module, objects_type=object_name)
+        url = url_for('.list_{0}s'.format(object_name))
 
         links.append('<li class="{0} {1}"><a href="{2}">{3}</a></li>'.format(
             ('active' if object_name == objects_type else ''), color, url, name

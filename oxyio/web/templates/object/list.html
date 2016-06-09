@@ -17,18 +17,23 @@
 
             {{ forms.fields(filter_form, object=request.args, inline=True) }}
 
-            <div><button type="submit" class="button blue small">Filter</button></div>
+            <div class="{% if filtered %}buttonset{% endif %}">
+                <button type="submit" class="button blue small">Filter</button>
+                {% if filtered %}
+                    <a class="button red small">Clear</a>
+                {% endif %}
+            </div>
         </form>
 
         <ul id="links">
             {% if action != 'own' %}
-                <li><a href="{{ url_for('list_objects', module_name=module_name, objects_type=objects_type) }}">View own</a></li>
+                <li><a href="{{ url_for('.list_{0}s'.format(objects_type)) }}">View own</a></li>
             {% endif %}
             {% if action != 'all' and has_any_objects_permission(module_name, objects_type, 'view') %}
-                <li><a class="red" href="{{ url_for('list_all_objects', module_name=module_name, objects_type=objects_type) }}">View all</a></li>
+                <li><a class="red" href="{{ url_for('.list_all_{0}s'.format(objects_type)) }}">View all</a></li>
             {% endif %}
             {% if has_global_objects_permission(module_name, objects_type, 'Add') %}
-                <li><a class="red" href="{{ url_for('view_add_objects', module_name=module_name, objects_type=objects_type) }}">Add {{ object_name|lower }}</a></li>
+                <li><a class="red" href="{# url_for('view_add_objects', module_name=module_name, objects_type=objects_type) #}">Add {{ object_name|lower }}</a></li>
             {% endif %}
         </ul>
     </div></section>

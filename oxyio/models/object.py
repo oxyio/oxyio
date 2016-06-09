@@ -31,7 +31,9 @@ STRING_TO_PYTHON = {
 
 
 def _column_to_python(column):
-    '''Map column types -> string_type, python_type, col args.'''
+    '''
+    Map column types -> string_type, python_type, col args.
+    '''
 
     # Integers
     if isinstance(column, db.Integer):
@@ -70,7 +72,9 @@ class Object(Base):
 
     @classmethod
     def _configure(cls):
-        '''Provide defaults for the object config.'''
+        '''
+        Provide defaults for the object config.
+        '''
 
         # Plural title default = title+s
         if cls.TITLES is None:
@@ -198,25 +202,26 @@ class Object(Base):
     #
 
     def url(self, url_string):
-        return url_for(url_string,
-            module_name=self.MODULE, object_type=self.OBJECT, object_id=self.id
+        return url_for(
+            '{0}.{1}_{2}'.format(self.MODULE, url_string, self.OBJECT),
+            object_id=self.id
         )
 
     @property
     def view_url(self):
-        return self.url('view_object')
+        return self.url('view')
 
     @property
     def edit_url(self):
-        return self.url('edit_object')
+        return self.url('edit')
 
     @property
     def owner_url(self):
-        return self.url('owner_object')
+        return self.url('owner')
 
     @property
     def delete_url(self):
-        return self.url('delete_object')
+        return self.url('delete')
 
     def index_stats(self, *args, **kwargs):
         index_object_stats(self, *args, **kwargs)
