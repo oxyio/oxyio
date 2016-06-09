@@ -17,6 +17,21 @@ from oxyio.web.user import permissions_required
 def admin_debug():
     g.module = 'admin'
 
+    urls = []
+    api_urls = []
+
+    for url in web_app.url_map.iter_rules():
+        if 'debugtoolbar' in url.endpoint or 'debug_toolbar' in url.endpoint:
+            continue
+
+        url_meta = (url, url.endpoint, url.methods - {'OPTIONS', 'HEAD'})
+
+        if '_api' in url.endpoint:
+            api_urls.append(url_meta)
+
+        else:
+            urls.append(url_meta)
+
     return render_or_jsonify('admin/debug.html',
         action='debug',
         modules=module_map,
@@ -24,11 +39,8 @@ def admin_debug():
         websockets=websocket_map,
         items=item_map,
         tasks=task_map,
-        urls=sorted([
-            (url, url.endpoint, url.methods - {'OPTIONS', 'HEAD'})
-            for url in web_app.url_map.iter_rules()
-            if 'debugtoolbar' not in url.endpoint and 'debug_toolbar' not in url.endpoint
-        ], key=itemgetter(0)),
+        urls=sorted(urls, key=itemgetter(0)),
+        api_urls=sorted(api_urls, key=itemgetter(0)),
         configs={
             key: getattr(settings, key)
             for key in dir(settings)

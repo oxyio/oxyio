@@ -69,4 +69,24 @@
             </tr>{% endfor %}
         </tbody>
     </table>
+
+
+    <h2>API Routes</h2>
+    <p>Table of all API HTTP(S) routes.</p>
+    <table>
+        <thead><tr>
+            <th>Endpoint</th>
+            <th>Function</th>
+            <th>Methods</th>
+        </tr></thead>
+        <tbody>
+            {% for (url, endpoint, methods) in api_urls %}<tr>
+                <td>{{ url }}</td>
+                <td><code>{{ endpoint }}</code></td>
+                <td>{% for method in methods %}
+                    <code>{{ method }}</code>{% if not loop.last %}, {% endif %}
+                {% endfor %}</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
 {% endblock %}
