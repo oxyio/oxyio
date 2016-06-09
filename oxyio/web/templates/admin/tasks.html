@@ -1,5 +1,11 @@
 {% extends 'admin/base.html' %}
 
+{% block subheader %}
+    <section id="subheader"><div class="wrap">
+        <h1>Tasks</h1>
+    </div></section>
+{% endblock %}
+
 {% block content %}
     <div id="tasks" data-tasks="{{ get_flashed_request('task_admin') }}"></div>
 {% endblock %}

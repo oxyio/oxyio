@@ -76,13 +76,18 @@ export default class TasksAdmin extends Component {
 
     getTaskList(taskIds) {
         const taskItems = taskIds.map((taskId) => {
+            const task = this.state.tasks[taskId];
+
             return (
                 <li
                     key={taskId}
                     onClick={() => this.showTask(taskId)}
-                >{taskId}</li>
+                >{taskId} <small>({task.task})</small></li>
             );
         });
+
+        if (taskItems.length === 0)
+            return 'None found';
 
         return (
             <ul>
@@ -91,7 +96,7 @@ export default class TasksAdmin extends Component {
         );
     }
 
-    getTaskInfo() {
+    getActiveTaskInfo() {
         if (!this.state.taskId)
             return 'Please select a task';
 
@@ -100,7 +105,7 @@ export default class TasksAdmin extends Component {
 
         return (
             <div>
-                <h3>
+                <h3 className='top'>
                     Task: {taskId}<br />
                     {task.local == 'true' ? <small>local</small> : ''}
                 </h3>
@@ -110,11 +115,13 @@ export default class TasksAdmin extends Component {
                     State: <strong>{task.state}</strong><br />
                     Updated: <strong>{task.last_update}</strong>
                 </p>
+
+                {this.getActiveTaskMessages()}
             </div>
         );
     }
 
-    getTaskMessages() {
+    getActiveTaskMessages() {
         const messages = this.state.taskMessages.map((message) => {
             message = JSON.parse(message);
             message = JSON.stringify(message, null, 2);
@@ -135,7 +142,7 @@ export default class TasksAdmin extends Component {
         return (
             <div className='block base'>
                 <div className='block third'>
-                    <h3>Active Tasks</h3>
+                    <h3 className='top'>Active Tasks</h3>
                     {this.getTaskList(this.state.activeTaskIds)}
 
                     <div className='block base'>
@@ -152,8 +159,7 @@ export default class TasksAdmin extends Component {
                 </div>
 
                 <div className='block two-third'>
-                    {this.getTaskInfo()}
-                    {this.getTaskMessages()}
+                    {this.getActiveTaskInfo()}
                 </div>
             </div>
         );
