@@ -1,13 +1,14 @@
 # oxy.io
-# File: oxyio/views/objects.py
+# File: oxyio/web/views/objects.py
 # Desc: list & add objects
 
 from flask import abort, request, g
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import joinedload
 
-from oxyio.data import get_object_class_or_404, get_objects
+from oxyio.data import get_object_class_or_404, get_object_class, get_objects
 from oxyio.models.object import iter_relations
+
 from oxyio.web.route import html_api_route
 from oxyio.web.request import in_request_args, get_request_data
 from oxyio.web.response import render_or_jsonify, redirect_or_jsonify
@@ -32,116 +33,136 @@ def _filter_field(objects, obj, field, value):
     return objects
 
 
-def _do_list_objects(module_name, objects_type, obj, objects, is_all=False):
+def _do_list_relations(relations):
+    return [
+        (field, module, object_type, get_object_class(module, object_type))
+        for field, module, object_type, _ in iter_relations(relations)
+    ]
+
+
+def _do_list_objects(module_name, objects_type, get_objects_func, is_all=False):
+    g.module = module_name
+    g.object = objects_type
+
+    object_class = get_object_class_or_404(module_name, objects_type)
+    objects = get_objects_func(module_name, objects_type)
+
     # Join-load any relations
     objects = objects.options(*[
         joinedload(field)
-        for field, _, _ in obj.LIST_RELATIONS
+        for field, _, _ in object_class.LIST_RELATIONS
     ])
 
     # Join-load any multi relations
     objects = objects.options(*[
         joinedload(field)
-        for field, _, _ in obj.LIST_MRELATIONS
+        for field, _, _ in object_class.LIST_MRELATIONS
     ])
 
     # Join-load any list fields which ask for it
-    for (field, options) in obj.LIST_FIELDS:
+    for (field, options) in object_class.LIST_FIELDS:
         if options.get('join'):
             objects = objects.options(joinedload(field))
 
     # Apply any filters
     filtered = False
 
-    for (field, _) in obj.FILTER_FIELDS:
+    for (field, _) in object_class.FILTER_FIELDS:
         if in_request_args(field):
             filtered = True
-            objects = _filter_field(objects, obj, field, request.args[field])
+            objects = _filter_field(objects, object_class, field, request.args[field])
 
     # Name filter
     if 'name' in request.args and len(request.args['name']) > 0:
         filtered = True
         objects = objects.filter(
-            obj.name.like('%{0}%'.format(request.args['name']))
+            object_class.name.like('%{0}%'.format(request.args['name']))
         )
 
     # Fetch the objects
     objects = list(objects)
 
     # Build filter form
-    filter_form = obj().build_filter_form()
+    filter_form = object_class().build_filter_form()
 
-    return render_or_jsonify('object/list.html', {
-        'object_name': obj.TITLE,
-        'objects_name': obj.TITLES,
-        'list_fields': obj.LIST_FIELDS,
-        'list_relations': list(iter_relations(obj.LIST_RELATIONS)),
-        'list_mrelations': list(iter_relations(obj.LIST_MRELATIONS)),
+    return render_or_jsonify('objects/list.html', {
+        'object_class': object_class,
+        'list_fields': object_class.LIST_FIELDS,
+        'list_relations': _do_list_relations(object_class.LIST_RELATIONS),
+        'list_mrelations': _do_list_relations(object_class.LIST_MRELATIONS),
         'filter_form': filter_form,
+        'filtered': filtered,
         'action': 'all' if is_all else 'own',
-        'filtered': filtered
     },
         module_name=module_name,
         objects_type=objects_type,
-        objects=objects
+        objects=objects,
     )
 
 
 def list_objects(module_name, objects_type):
+    if not has_global_objects_permission(module_name, objects_type, 'view'):
+        return abort(403)
+
+    return _do_list_objects(
+        module_name, objects_type,
+        get_objects_func=get_objects,
+    )
+
+
+def list_own_objects(module_name, objects_type):
     if not has_own_objects_permission(module_name, objects_type, 'view'):
         return abort(403)
 
-    g.module = module_name
-    g.object = objects_type
-
-    obj = get_object_class_or_404(module_name, objects_type)
-    objects = get_own_objects(module_name, objects_type)
-
-    return _do_list_objects(module_name, objects_type, obj, objects)
+    return _do_list_objects(
+        module_name, objects_type,
+        get_objects_func=get_own_objects,
+    )
 
 
 def list_all_objects(module_name, objects_type):
     if not has_any_objects_permission(module_name, objects_type, 'view'):
         return abort(403)
 
-    g.module = module_name
-    g.object = objects_type
-
-    obj = get_object_class_or_404(module_name, objects_type)
-
-    # Get objects
-    objects = get_objects(module_name, objects_type)
-
-    return _do_list_objects(module_name, objects_type, obj, objects, is_all=True)
+    return _do_list_objects(
+        module_name, objects_type,
+        get_objects_func=get_objects,
+        is_all=True,
+    )
 
 
 def view_add_objects(module_name, objects_type):
     # Check permission (can't use decorator as need object_type)
-    if not has_global_objects_permission(module_name, objects_type, 'Add'):
+    if not has_global_objects_permission(module_name, objects_type, 'add'):
         return abort(403)
 
     g.module = module_name
     g.object = objects_type
 
     # Get object class
-    obj = get_object_class_or_404(module_name, objects_type)
+    object_class = get_object_class_or_404(module_name, objects_type)
 
     # Build it's form
-    add_form = obj().build_form()
+    add_form = object_class().build_form()
+
+    template_data = {
+        'add_form': add_form,
+    }
 
     data = {
-        'add_form': add_form,
         'objects_type': objects_type,
-        'object_name': obj.TITLE,
-        'objects_name': obj.TITLES,
-        'module_name': module_name
+        'object_class': object_class,
+        'module_name': module_name,
     }
 
     # Load view template file from module, default to standard
     try:
-        return render_or_jsonify('{0}/add.html'.format(objects_type), **data)
+        return render_or_jsonify(
+            '{0}/add.html'.format(objects_type), template_data, **data
+        )
+
     except TemplateNotFound:
-        return render_or_jsonify('object/add.html', **data)
+        return render_or_jsonify('objects/add.html', template_data, **data)
 
 
 def add_objects(module_name, object_type):
@@ -165,8 +186,9 @@ def add_objects(module_name, object_type):
         # Apply request data to the empty object
         new_object.edit(request_data)
 
-        # Set the user_id to the current user
-        new_object.user_id = get_current_user().id
+        # If this object can be owned, set the user_id to the current user
+        if obj.OWNABLE:
+            new_object.user_id = get_current_user().id
 
         # Validate & save it
         new_object.save()
@@ -182,40 +204,52 @@ def add_objects(module_name, object_type):
     # Redirect to it
     return redirect_or_jsonify(
         new_object.view_url,
-        success='{0} Added'.format(obj.TITLE)
+        success='{0} Added'.format(obj.TITLE),
     )
 
 
 def create_objects_views(app, api_app, cls):
     args = (cls.MODULE, cls.OBJECT)
 
-    # Create list view
-    html_api_route(
-        '/{0}s'.format(cls.OBJECT),
-        methods=['GET'],
-        endpoint='list_{0}s'.format(cls.OBJECT),
-        app=app, api_app=api_app
-    )(login_required(lambda: list_objects(*args)))
+    # Create list views
+    if cls.OWNABLE:
+        # List own objects
+        html_api_route(
+            '/{0}s'.format(cls.OBJECT),
+            methods=['GET'],
+            endpoint='list_own_{0}s'.format(cls.OBJECT),
+            app=app, api_app=api_app,
+        )(login_required(lambda: list_own_objects(*args)))
 
-    # Create list all view
-    html_api_route(
-        '/{0}s/all'.format(cls.OBJECT),
-        methods=['GET'],
-        endpoint='list_all_{0}s'.format(cls.OBJECT),
-        app=app, api_app=api_app
-    )(login_required(lambda: list_all_objects(*args)))
+        # Create list all view
+        html_api_route(
+            '/{0}s/all'.format(cls.OBJECT),
+            methods=['GET'],
+            endpoint='list_all_{0}s'.format(cls.OBJECT),
+            app=app, api_app=api_app,
+        )(login_required(lambda: list_all_objects(*args)))
 
-    # Create view add view
-    app.route(
-        '/{0}s/add'.format(cls.OBJECT),
-        methods=['GET'],
-        endpoint='view_add_{0}s'.format(cls.OBJECT)
-    )(login_required(lambda: view_add_objects(*args)))
+    else:
+        # List "global" objects
+        html_api_route(
+            '/{0}s'.format(cls.OBJECT),
+            methods=['GET'],
+            endpoint='list_{0}s'.format(cls.OBJECT),
+            app=app, api_app=api_app,
+        )(login_required(lambda: list_objects(*args)))
 
-    # Create POST add view
-    html_api_route(
-        '/{0}s/add'.format(cls.OBJECT),
-        methods=['POST'],
-        endpoint='add_{0}s'.format(cls.OBJECT),
-        app=app, api_app=api_app
-    )(login_required(lambda: add_objects(*args)))
+    if cls.ADDABLE:
+        # Create view add view
+        app.route(
+            '/{0}s/add'.format(cls.OBJECT),
+            methods=['GET'],
+            endpoint='view_add_{0}s'.format(cls.OBJECT),
+        )(login_required(lambda: view_add_objects(*args)))
+
+        # Create POST add view
+        html_api_route(
+            '/{0}s/add'.format(cls.OBJECT),
+            methods=['POST'],
+            endpoint='add_{0}s'.format(cls.OBJECT),
+            app=app, api_app=api_app,
+        )(login_required(lambda: add_objects(*args)))

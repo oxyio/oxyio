@@ -48,7 +48,8 @@ web_app.jinja_env.globals['get_settings'] = lambda: settings
 
 # Helper for making relations pretty
 web_app.jinja_env.globals['prettify_relation'] = lambda field: (
-    field.replace('_id', '')
+    field.replace('_ids', '')
+    .replace('_id', '')
     .replace('_', ' ')
 )
 
@@ -115,6 +116,9 @@ def modules_nav():
     # Other module links
     links = []
     for name, module in module_map.iteritems():
+        if not has_permission(name):
+            continue
+
         if name != module_name:
             color = module.config.COLOR
             icon = module.config.ICON
@@ -138,7 +142,7 @@ def modules_nav():
             </a></li>
         '''.format(url_for('dashboard')))
 
-    if add_admin is True and has_permission('Admin'):
+    if add_admin is True and has_permission('admin'):
         links.append('''
             <li><a href="{0}" class="red">
                 <span class="icon icon-cog"></span> Admin
@@ -165,11 +169,24 @@ def module_nav():
     links = []
     for object_name, object_class in objects.iteritems():
         name = object_class.TITLES
-        url = url_for('.list_{0}s'.format(object_name))
+        url = None
 
-        links.append('<li class="{0} {1}"><a href="{2}">{3}</a></li>'.format(
-            ('active' if object_name == objects_type else ''), color, url, name
-        ))
+        # If object is ownable, default to all view if allowed, otherwise just own
+        if object_class.OWNABLE:
+            if has_any_objects_permission(g.module, object_name, 'view'):
+                url = url_for('.list_all_{0}s'.format(object_name))
+
+            elif has_own_objects_permission(g.module, object_name, 'view'):
+                url = url_for('.list_own_{0}s'.format(object_name))
+
+        # Unowned objects just have a single, global, list view
+        elif has_global_objects_permission(g.module, object_name, 'view'):
+            url = url_for('.list_{0}s'.format(object_name))
+
+        if url:
+            links.append('<li class="{0} {1}"><a href="{2}">{3}</a></li>'.format(
+                ('active' if object_name == objects_type else ''), color, url, name
+            ))
 
     return Markup(''.join(links))
 

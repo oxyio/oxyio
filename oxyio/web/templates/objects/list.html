@@ -1,0 +1,182 @@
+{% import 'function/forms.html' as forms %}
+{% extends 'base_user.html' %}
+
+
+{% block subheader %}
+    <section id="subheader"><div class="wrap">
+        <h1>{% if action == 'all' %}All {% endif %}{{ object_class.TITLES }}</h1>
+
+        <form class="inline">
+            <div>
+                <input
+                    type="text" name="name"
+                    placeholder="Filter by name..."
+                    value="{{ request.args.name }}"
+                />
+            </div>
+
+            {{ forms.fields(filter_form, object=request.args, inline=True) }}
+
+            <div class="{% if filtered %}buttonset{% endif %}">
+                <button type="submit" class="button blue small">Filter</button>
+                {% if filtered %}
+                    <a class="button red small">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <ul id="links">
+            {% if object_class.OWNABLE %}
+                {% if action != 'own' %}
+                    <li><a href="{{ url_for('.list_own_{0}s'.format(objects_type)) }}">View own</a></li>
+                {% endif %}
+                {% if action != 'all' and has_any_objects_permission(module_name, objects_type, 'view') %}
+                    <li><a class="red" href="{{ url_for('.list_all_{0}s'.format(objects_type)) }}">View all</a></li>
+                {% endif %}
+            {% endif %}
+
+            {% if object_class.ADDABLE %}
+                {% if has_global_objects_permission(module_name, objects_type, 'Add') %}
+                    <li><a class="red" href="{{ url_for('.add_{0}s'.format(objects_type)) }}">Add {{ object_class.TITLE|lower }}</a></li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    </div></section>
+{% endblock %}
+
+
+{% block content %}
+    <table class="object-based">
+        <thead><tr>
+            <th width="50px">ID</th>
+            <th width="15%">Name</th>
+
+            {% if action == 'all' %}
+                <th width="15%">User</th>
+            {% endif %}
+
+            {% for (field, options) in list_fields %}
+                <th>{{ forms.format_title(field, options) }}</th>
+            {% endfor %}
+
+            {% for field, _, _, options in list_relations %}
+                <th>{{ forms.format_title(prettify_relation(field), options) }}</th>
+            {% endfor %}
+
+            {% for field, _, _, options in list_mrelations %}
+                <th>{{ forms.format_title(field, options) }}</th>
+            {% endfor %}
+
+            <th width="145px"></th>
+        </tr></thead>
+        <tbody>{% for object in objects %}
+            <tr>
+                <td>{{ object.id }}</td>
+                <td>
+                    <a class="module-color" href="{{ object.view_url }}">
+                        {{ object.name }}
+                    </a>
+                </td>
+                {% if action == 'all' %}
+                    <td>{% if object.user %}
+                        <a href="#">{{ object.user.name }}<a>
+                    {% endif %}</td>
+                {% endif %}
+
+                {% for field, options in list_fields %}
+                    <td>{% if object[field] %}
+                        {% if options.enums %}
+                            {{ options.enums[object[field]] }}
+                        {% elif is_list(object[field]) %}
+                            {{ object[field]|join(', ') }}
+                        {% else %}
+                            {{ forms.format_value(object[field], options) }}
+                        {% endif %}
+                    {% else %}&mdash;{% endif %}</td>
+                {% endfor %}
+
+                {% for field, module, type, object_class in list_relations %}
+                    <td>
+                        {% if object[field] %}
+                            {%
+                                if (
+                                    object_class.OWNABLE
+                                    and (
+                                        has_any_objects_permission(module, type, 'view')
+                                        or (
+                                            has_own_objects_permission(module, type, 'view')
+                                            and object[field].user_id == current_user().id
+                                        )
+                                    )
+                                ) or has_global_objects_permission(module, type, 'view')
+                            %}
+                                <a class="relation-link" href="{{ object[field].view_url }}">{{ object[field].name }}</a>
+                            {% else %}
+                                {{ object[field].name }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+
+                {% for field, module, type, object_class in list_mrelations %}
+                    <td>
+                        {% if object[field] %}
+                            {%
+                                if (
+                                    object_class.OWNABLE
+                                    and (
+                                        has_any_objects_permission(module, type, 'view')
+                                        or (
+                                            has_own_objects_permission(module, type, 'view')
+                                            and object[field].user_id == current_user().id
+                                        )
+                                    )
+                                ) or has_global_objects_permission(module, type, 'view')
+                            %}
+                                {% for obj in object[field] %}
+                                    <a class="relation-link" href="{{ obj.view_url }}">{{ obj.name }}</a>{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                {% for obj in object[field] %}
+                                    {{ obj.name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+
+                <td class="buttonset align-right">
+                    <a class="button green small" href="{{ object.view_url }}">View</a>
+
+                    {% if object_class.OWNABLE %}
+                        {% if action == 'own' %}
+                            {% if has_own_objects_permission(module_name, objects_type, 'edit') %}
+                                <a href="{{ object.edit_url }}" class="button blue small">Edit</a>
+                            {% endif %}
+                        {% else %}
+                            {% if has_any_objects_permission(module_name, objects_type, 'edit') %}
+                                <a href="{{ object.edit_url }}" class="button blue small">Edit</a>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        {% if has_global_objects_permission(module_name, objects_type, 'edit') %}
+                            <a href="{{ object.edit_url }}" class="button blue small">Edit</a>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if has_global_objects_permission(module_name, objects_type, 'delete') %}
+                        <button class="button red small">Delete</button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+
+        {% if objects|length == 0 %}
+            <tr class="no-results"><td colspan="100%">
+                No {{ object_class.NAMES|lower }} found
+            </td></tr>
+        {% endif %}
+
+        </tbody>
+    </table>
+{% endblock %}

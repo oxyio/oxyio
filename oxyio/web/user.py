@@ -5,7 +5,6 @@
 from functools import wraps
 from urllib import quote_plus
 
-from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from flask import g, abort, session, redirect, request
 
@@ -18,18 +17,6 @@ from oxyio.data import get_object, get_objects, get_object_class
 @web_app.before_request
 def prepare_permissions_g():
     g.permissions = {}
-
-
-def get_own_objects(module_name, objects_type, *filters):
-    '''Get objects of a certain type owned by the current user.'''
-
-    obj = get_object_class(module_name, objects_type)
-    user = get_current_user()
-
-    return get_objects(module_name, objects_type, or_(
-        obj.user_id == user.id,
-        obj.user_group_id == (-1 if user.user_group_id is None else user.user_group_id)
-    ), *filters)
 
 
 def get_current_user():
@@ -56,17 +43,30 @@ def get_current_user():
 
 
 def is_logged_in():
-    '''Test if the client is logged in as a user.'''
-
-    if hasattr(g, 'user'):
-        return True
+    '''
+    Test if the client is logged in as a user.
+    '''
 
     if get_current_user():
         return True
 
 
+def get_own_objects(module_name, objects_type, *filters):
+    '''
+    Get objects of a certain type owned by the current user.
+    '''
+
+    obj = get_object_class(module_name, objects_type)
+    user = get_current_user()
+
+    return get_objects(module_name, objects_type, obj.user_id == user.id, *filters)
+
+
 def has_permission(permission):
-    '''Check a single permission'''
+    '''
+    Check a single permission for the current user.
+    '''
+
     if not get_current_user():
         return False
 
@@ -76,13 +76,12 @@ def has_permission(permission):
     if isinstance(cached, bool):
         return cached
 
-    # Keymaster? come on in!...
-    if g.user.is_keymaster:
-        return True
-
     # Check the permission w/ group
     try:
-        Permission.query.filter_by(user_group_id=g.user.user_group_id, name=permission).one()
+        Permission.query.filter_by(
+            user_group_id=g.user.user_group_id, name=permission
+        ).one()
+
     except (NoResultFound, MultipleResultsFound):
         g.permissions[cache_key] = False
         return False
@@ -98,54 +97,71 @@ def has_permissions(*args):
 
 
 def has_object_permission(module_name, object_type, object_id, permission):
-    '''Check permissions for single objects.'''
+    '''
+    Check permissions for single objects.
+    '''
 
-    # Permission for any object
-    if has_permission('{0}Any{1}{2}'.format(permission, module_name, object_type)):
-        return True
+    object_class = get_object_class(module_name, object_type)
 
-    # Permission for owned objects
-    if not has_permission('{0}Own{1}{2}'.format(permission, module_name, object_type)):
-        return False
+    if object_class.OWNABLE:
+        # Permission for any object
+        if has_any_objects_permission(module_name, object_type, permission):
+            return True
 
-    # Get object, check user_id or group_id
-    user = get_current_user()
-    obj = get_object(module_name, object_type, object_id)
-    if obj and obj.user_id == user.id or obj.user_group_id == user.user_group_id:
-        return True
+        # Permission for owned objects
+        if not has_own_objects_permission(module_name, object_type, permission):
+            return False
+
+        # Get object, check user_id or group_id
+        user = get_current_user()
+        obj = get_object(module_name, object_type, object_id)
+        if obj and obj.user_id == user.id or obj.user_group_id == user.user_group_id:
+            return True
+
+    # Basic, un-ownable object permissions
+    else:
+        return has_global_objects_permission(module_name, object_type, permission)
 
     return False
 
 
 def has_object_permissions(module_name, object_type, object_id, *args):
-    if all(has_object_permission(module_name, object_type, permission, object_id) for permission in args):
+    if all(
+        has_object_permission(module_name, object_type, permission, object_id)
+        for permission in args
+    ):
         return True
 
 
 def has_own_objects_permission(module_name, objects_type, permission):
-    '''Check permissions against all owned objects_type.'''
+    '''
+    Check permissions against all owned ``objects_type``.
+    '''
 
     return has_permission('{0}Own{1}{2}'.format(permission, module_name, objects_type))
 
 
 def has_any_objects_permission(module_name, objects_type, permission):
-    '''Check permissions against all objects_type.'''
+    '''
+    Check permissions against all ``objects_type``.
+    '''
 
     return has_permission('{0}Any{1}{2}'.format(permission, module_name, objects_type))
 
 
 def has_global_objects_permission(module_name, objects_type, permission):
     '''
-    Global object permission shortcuts (ie no Any or Own)
-    basically: Delete<Object> or Owner<Object>
+    Check permissions against global (unownable) ``objects_type``.
     '''
-    # Permission for any object
+
     if has_permission('{0}{1}{2}'.format(permission, module_name, objects_type)):
         return True
 
 
 def login_required(func):
-    '''Login decorator (redirects to login).'''
+    '''
+    Login decorator - redirects non-users to the login page.
+    '''
 
     @wraps(func)
     def decorated_function(*args, **kwargs):
@@ -157,7 +173,10 @@ def login_required(func):
 
 
 def permissions_required(*permissions):
-    '''Permissions decorator (returns a 403).'''
+    '''
+    Permissions decorator - redirects to login if no user or returns a 403 if the current
+    user does not have permission.
+    '''
 
     def decorator(func):
         @wraps(func)
@@ -166,5 +185,5 @@ def permissions_required(*permissions):
                 return abort(403)
 
             return func(*args, **kwargs)
-        return decorated_function
+        return login_required(decorated_function)
     return decorator

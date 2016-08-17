@@ -19,7 +19,7 @@
 {% macro label(field, options) %}
     <label for="{{ field }}">
         {{ format_title(field, options) }}
-        {%- if options.text %}({{ options.text }}){% endif %}
+        {%- if options.text %} ({{ options.text }}){% endif %}
     </label>
 {% endmacro %}
 
@@ -55,8 +55,8 @@
 <!-- relation -> select -->
 {% macro relation(field, objects, value, options, inline) %}
     {{ label(prettify_relation(field), options) }}
-    <div class="select">
-        <select id="{{ field }}" name="{{ field }}">
+    <div class="select {% if options.editable == False %}disabled{% endif %}">
+        <select {% if options.editable == False %}disabled{% endif %} id="{{ field }}" name="{{ field }}">
             <option value="0">&mdash;</option>
             {% for obj in objects %}
                 <option value="{{ obj.id }}"{% if value == obj.id %} selected{% endif %}>{{ obj.name }}</option>
@@ -69,8 +69,8 @@
 <!-- multi relation -> multi select -->
 {% macro mrelation(field, objects, value, options, inline) %}
     {{ label(prettify_relation(field), options) }}
-    <div class="select multi multiselect">
-        <select {% if not options.editable %}disabled{% endif %} multiple id="{{ field }}" name="{{ field }}">
+    <div class="select multi multiselect {% if options.editable == False %}disabled{% endif %}">
+        <select {% if options.editable == False %}disabled{% endif %} multiple id="{{ field }}" name="{{ field }}">
             {% for obj in objects %}
                 <option value="{{ obj.id }}"{% if obj.id in options.related_ids %} selected{% endif %}>{{ obj.name }}</option>
             {% endfor %}

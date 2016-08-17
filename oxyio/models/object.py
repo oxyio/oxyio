@@ -11,11 +11,14 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from oxyio.app import db
 from oxyio.log import logger
+from oxyio.util import server_only
 from oxyio.exceptions import OxyioError
 from oxyio.stats import index_object_stats
+from oxyio.data import get_object_class
+
 from oxyio.web.user import (
-    get_own_objects, get_object,
-    has_own_objects_permission, has_object_permission
+    get_own_objects, get_objects, get_object, has_object_permission,
+    has_any_objects_permission, has_own_objects_permission, has_global_objects_permission,
 )
 
 from .base import Base
@@ -26,7 +29,7 @@ from .note import Note
 STRING_TO_PYTHON = {
     'int': int,
     'enum': set,
-    'string': str
+    'string': str,
 }
 
 
@@ -53,10 +56,8 @@ def _column_to_python(column):
 
 
 def iter_relations(relations):
-    print 'ITER RELATIONS', relations
     for attribute, module_type, options in relations:
         module, object_type = module_type.split('/')
-        print 'YIELD', attribute, module, object_type, options
         yield (attribute, module, object_type, options)
 
 
@@ -67,8 +68,18 @@ class Object(Base):
     #
 
     NAME = TITLE = TITLES = None
-    ES_DOCUMENTS = None # list of ES mappings
-    ROUTES = None # list of (route, method, view_func, permission)
+
+    # Whether this object can be owned by users
+    OWNABLE = False
+
+    # Whether this object can be added manually
+    ADDABLE = True
+
+    # List of ES mappings for this object
+    ES_DOCUMENTS = None
+
+    # Routes for this object - list of (route, method, view_func, permission)
+    ROUTES = None
 
     @classmethod
     def _configure(cls):
@@ -121,23 +132,15 @@ class Object(Base):
 
     @declared_attr
     def user_id(self):
-        return db.Column(db.Integer,
-            db.ForeignKey('core_user.id', ondelete='SET NULL')
-        )
+        if self.OWNABLE:
+            return db.Column(db.Integer,
+                db.ForeignKey('core_user.id', ondelete='SET NULL')
+            )
 
     @declared_attr
     def user(self):
-        return db.relationship('User')
-
-    @declared_attr
-    def user_group_id(self):
-        return db.Column(db.Integer,
-            db.ForeignKey('core_user_group.id', ondelete='SET NULL')
-        )
-
-    @declared_attr
-    def user_group(self):
-        return db.relationship('UserGroup')
+        if self.OWNABLE:
+            return db.relationship('User')
 
     @property
     def notes(self):
@@ -229,16 +232,16 @@ class Object(Base):
     # Forms
     #
 
+    @server_only
     def build_filter_form(self):
         '''
         Builds the objects filter/search form for macro in ``function/forms.html``.
         '''
 
-        # Uses just list fields
         form = self._config_to_form(self.FILTER_FIELDS)
-        print 'FRM<', form
         return form
 
+    @server_only
     def build_form(self):
         '''
         Builds an object edit/add form for macro in ``function/forms.html``.
@@ -250,19 +253,43 @@ class Object(Base):
         # Check we have permission to edit the target relation or m(ulti)relation
         # append in similar format to _config_to_form
         def _do_relation(field_type, module_name, objects_type, field_name, options):
-            # Do we have EditOwn permission on this type of object?
-            if has_own_objects_permission(module_name, objects_type, 'edit'):
-                objects = get_own_objects(module_name, objects_type)
-                options['editable'] = True
+            object_class = get_object_class(module_name, objects_type)
+
+            # Do we have edit permissions on this type of object
+            if object_class.OWNABLE:
+                # Edit any object
+                if has_any_objects_permission(module_name, objects_type, 'edit'):
+                    objects = get_objects(module_name, objects_type)
+
+                # Edit just our own objcts
+                elif has_own_objects_permission(module_name, objects_type, 'edit'):
+                    objects = get_own_objects(module_name, objects_type)
+
+            # Non-owned object, check global permission
+            elif has_global_objects_permission(module_name, objects_type, 'edit'):
+                objects = get_objects(module_name, objects_type)
+
+            # The current user does not have permission to edit either their own or all
+            # related objects, so we don't add this field to the form at all.
             else:
-                objects = getattr(self, field_name)
+                objects = (
+                    [getattr(self, field_name)]
+                    if field_type == 'relation'
+                    else getattr(self, field_name)
+                )
                 options['editable'] = False
+
+            field_id_name = (
+                '{0}_id'.format(field_name)
+                if field_type == 'relation'
+                else '{0}_ids'.format(field_name)
+            )
 
             form.append((
                 field_type,
-                field_name,
+                field_id_name,
                 objects,
-                options
+                options,
             ))
 
         # Related objects
@@ -271,7 +298,7 @@ class Object(Base):
         ):
             _do_relation(
                 'relation', module_name, object_type,
-                '{0}_id'.format(object_type), options
+                field, options,
             )
 
         # Many/Multi-related objects
@@ -279,24 +306,27 @@ class Object(Base):
             self.EDIT_MRELATIONS
         ):
             options['related_ids'] = [obj.id for obj in getattr(self, field)]
-
             _do_relation('mrelation', module_name, objects_type, field, options)
 
+        print('FORM', form)
         return form
 
     # Editing
     #
 
+    @server_only
     def edit(self, request_data):
         self.check_apply_edit_fields(request_data)
         self.check_apply_edit(request_data)
 
+    @server_only
     def check_apply_edit(self, request_data):
         '''
         Custom check/apply request data for fields not in ``self.EDIT_FIELDS``.
         '''
         pass
 
+    @server_only
     def check_apply_edit_fields(self, request_data):
         '''
         Check and apply ``self.EDIT_FIELDS`` to ``self``.
@@ -318,41 +348,48 @@ class Object(Base):
         for field, options in self.EDIT_FIELDS:
             data = request_data.get(field)
 
-            if data is not None:
-                _, python_type, arg = self._col_to_data(field, options)
+            # Skip if not provided (partial update)
+            if data is None:
+                continue
 
-                if python_type is int:
-                    try:
-                        data = int(data)
-                    except ValueError:
-                        raise self.EditRequestError('Invalid data for {0}'.format(field))
+            _, python_type, arg = self._col_to_data(field, options)
 
-                if python_type is set:
-                    if data not in arg:
-                        raise self.EditRequestError(
-                            'Invalid data for {0}; {1} is not in set {2}'.format(
-                                field, data, arg
-                            )
+            if python_type is int:
+                try:
+                    data = int(data)
+                except ValueError:
+                    raise self.EditRequestError('Invalid data for {0}'.format(field))
+
+            if python_type is set:
+                if data not in arg:
+                    raise self.EditRequestError(
+                        'Invalid data for {0}; {1} is not in set {2}'.format(
+                            field, data, arg
                         )
+                    )
 
-                if python_type is str:
-                    length = len(data)
-                    if length > arg:
-                        raise self.EditRequestError(
-                            'String to long for {0}, limit is {1}'.format(
-                                field, arg
-                            )
+            if python_type is str:
+                length = len(data)
+                if length > arg:
+                    raise self.EditRequestError(
+                        'String to long for {0}, limit is {1}'.format(
+                            field, arg
                         )
+                    )
 
-                # Set the value, for custom .is_valid if supplied
-                setattr(self, field, data)
+            # Set the value, for custom .is_valid if supplied
+            setattr(self, field, data)
 
         # Ensure related items exist
         for field, module_name, object_type, options in iter_relations(
             self.EDIT_RELATIONS
         ):
-            field_name = '{0}_id'.format(object_type)
+            field_name = '{0}_id'.format(field)
             object_id = request_data.get(field_name)
+
+            # Skip if not provided (partial update)
+            if object_id is None:
+                continue
 
             try:
                 object_id = int(object_id)
@@ -364,12 +401,11 @@ class Object(Base):
                     'Invalid object_id for: {0}'.format(object_type)
                 )
 
-            # Skip if set None or no change
-            if object_id is None or getattr(self, field_name) == object_id:
-                continue
-
             # Check we even have edit permission on this object type
-            if not has_object_permission(module_name, object_type, object_id, 'Edit'):
+            if (
+                object_id is not None
+                and not has_object_permission(module_name, object_type, object_id, 'edit')
+            ):
                 raise self.EditRequestError(
                     'You do not have permission to set {0} => {1} #{2}'.format(
                         field_name, object_type, object_id
@@ -383,10 +419,16 @@ class Object(Base):
         for field, module_name, objects_type, options in iter_relations(
             self.EDIT_MRELATIONS
         ):
-            object_ids = request_data.get(field, [])
+            field_name = '{0}_ids'.format(field)
+            object_ids = request_data.get(field_name)
+
+            # Skip if not provided (partial update)
+            if object_ids is None:
+                continue
 
             try:
                 object_ids = set([int(i) for i in object_ids])
+
             except ValueError:
                 raise self.EditRequestError(
                     'Invalid object_ids for: {0}'.format(object_type)
@@ -394,7 +436,7 @@ class Object(Base):
 
             # Check edit permissions for each object
             if not all(
-                has_object_permission(module_name, objects_type, object_id, 'Edit')
+                has_object_permission(module_name, objects_type, object_id, 'edit')
                 for object_id in object_ids
             ):
                 raise self.EditRequestError(
@@ -415,6 +457,7 @@ class Object(Base):
     # Shortcuts/misc
     #
 
+    @server_only
     def serialise(self):
         '''
         For outputting to JSON in API-mode.

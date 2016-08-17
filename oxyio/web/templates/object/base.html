@@ -6,24 +6,29 @@
         <h1>{{ object.TITLE }}: {{ object.name }}</h1>
 
         <ul id="links">
-            {% if has_object_permission(module_name, object_type, 'view', object.id) %}
+            {% if has_object_permission(module_name, object_type, object.id, 'view') %}
                 <li><a
                     {% if action == 'view' %}class="active"{% endif %}
                     href="{{ url_for('.view_{0}'.format(object_type), object_id=object.id) }}"
                 >View</a></li>
             {% endif %}
-            {% if has_object_permission(module_name, object_type, 'edit', object.id) %}
+
+            {% if has_object_permission(module_name, object_type, object.id, 'edit') %}
                 <li><a
                     {% if action == 'edit' %}class="active"{% endif %}
                     href="{{ url_for('.view_edit_{0}'.format(object_type), object_id=object.id) }}"
                 >Edit</a></li>
             {% endif %}
-            {%  if has_global_objects_permission(module_name, object_type, 'owner') %}
-                <li><a
-                    class="red {% if action == 'owner' %}active{% endif %}"
-                    href="{{ url_for('.view_owner_{0}'.format(object_type), object_id=object.id) }}"
-                >Owner</a></li>
+
+            {% if object.OWNABLE %}
+                {%  if has_global_objects_permission(module_name, object_type, 'owner') %}
+                    <li><a
+                        class="red {% if action == 'owner' %}active{% endif %}"
+                        href="{{ url_for('.view_owner_{0}'.format(object_type), object_id=object.id) }}"
+                    >Owner</a></li>
+                {% endif %}
             {% endif %}
+
             {% if has_global_objects_permission(module_name, object_type, 'delete') %}
                 <li><a class="red" href="#">Delete</a></li>
             {% endif %}

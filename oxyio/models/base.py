@@ -57,8 +57,9 @@ class BaseMeta(DeclarativeMeta):
                 cls.MODULE = module_name
                 cls.OBJECT = object_name
 
-                logger.debug('Registered object {0}/{1}'.format(
-                    module_name, object_name
+                logger.debug('Registered {0}object {1}/{2}'.format(
+                    'owned ' if cls.OWNABLE else '',
+                    module_name, object_name,
                 ))
 
             # Items

@@ -1,0 +1,36 @@
+{% import 'function/forms.html' as forms %}
+{% extends 'base_user.html' %}
+
+
+{% block subheader %}
+    <section id="subheader"><div class="wrap">
+        <h1>Add new {{ object_class.TITLE }}</h1>
+
+        <ul id="links">
+            {% if object_class.OWNABLE %}
+                {% if action != 'own' %}
+                    <li><a href="{{ url_for('.list_own_{0}s'.format(objects_type)) }}">View own</a></li>
+                {% endif %}
+                {% if action != 'all' and has_any_objects_permission(module_name, objects_type, 'view') %}
+                    <li><a class="red" href="{{ url_for('.list_all_{0}s'.format(objects_type)) }}">View all</a></li>
+                {% endif %}
+            {% else %}
+                {% if has_global_objects_permission(module_name, objects_type, 'view') %}
+                    <li><a href="{{ url_for('.list_{0}s'.format(objects_type)) }}">View {{ object_class.TITLES|lower }}</a></li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    </div></section>
+{% endblock %}
+
+{% block content %}
+    <div class="block base">
+        <form action="#" method="post" class="third block">
+            {{ forms.fields(add_form) }}
+
+            <button class="button green">Add {{ object_name }}</button>
+
+            {{ csrf_input() }}
+        </form>
+    </div>
+{% endblock %}
