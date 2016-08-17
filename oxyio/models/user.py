@@ -49,11 +49,6 @@ class User(db.Model):
     reset_key = db.Column(db.String(128))
     reset_time = db.Column(db.DateTime)
 
-    # Have all permissions
-    is_keymaster = db.Column(db.Boolean,
-        nullable=False, default=False, server_default='0'
-    )
-
     user_group_id = db.Column(db.Integer,
         db.ForeignKey('core_user_group.id', ondelete='SET NULL')
     )
