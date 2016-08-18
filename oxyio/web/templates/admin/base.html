@@ -14,22 +14,39 @@
 
 
 {% block modulenav %}
-    <li class="red{% if action == 'settings' %} active{% endif %}">
-        <a href="{{ url_for('admin_settings') }}">Settings</a>
-    </li>
-    <li{% if action == 'users' %} class="active"{% endif %}>
-        <a href="{{ url_for('admin_users') }}">Users/Groups</a>
-    </li>
-    <li{% if action == 'permissions' %} class="active"{% endif %}>
-        <a href="{{ url_for('admin_permissions') }}">Permissions</a>
-    </li>
-    <li{% if action == 'tasks' %} class="active"{% endif %}>
-        <a href="{{ url_for('admin_tasks') }}">Tasks</a>
-    </li>
-    <li{% if action == 'logs' %} class="active"{% endif %}>
-        <a href="{{ url_for('admin_logs') }}">Logs</a>
-    </li>
-    <li{% if action == 'debug' %} class="active"{% endif %}>
-        <a href="{{ url_for('admin_debug') }}">Debug</a>
-    </li>
+    {% if has_permission('AdminSettings') %}
+        <li class="red{% if action == 'settings' %} active{% endif %}">
+            <a href="{{ url_for('admin_settings') }}">Settings</a>
+        </li>
+    {% endif %}
+
+    {% if has_permission('AdminUsers') %}
+        <li{% if action == 'users' %} class="active"{% endif %}>
+            <a href="{{ url_for('admin_users') }}">Users/Groups</a>
+        </li>
+    {% endif %}
+
+    {% if has_permission('AdminPermissions') %}
+        <li{% if action == 'permissions' %} class="active"{% endif %}>
+            <a href="{{ url_for('admin_permissions') }}">Permissions</a>
+        </li>
+    {% endif %}
+
+    {% if has_permission('AdminTasks') %}
+        <li{% if action == 'tasks' %} class="active"{% endif %}>
+            <a href="{{ url_for('admin_tasks') }}">Tasks</a>
+        </li>
+    {% endif %}
+
+    {% if has_permission('AdminLogs') %}
+        <li{% if action == 'logs' %} class="active"{% endif %}>
+            <a href="{{ url_for('admin_logs') }}">Logs</a>
+        </li>
+    {% endif %}
+
+    {% if has_permission('AdminDebug') %}
+        <li{% if action == 'debug' %} class="active"{% endif %}>
+            <a href="{{ url_for('admin_debug') }}">Debug</a>
+        </li>
+    {% endif %}
 {% endblock %}
