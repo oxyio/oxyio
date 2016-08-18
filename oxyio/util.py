@@ -51,6 +51,7 @@ def worker_only(func):
     '''
     Decorator that prevents a function from being called in worker mode.
     '''
+
     @wraps(func)
     def decorated(*args, **kwargs):
         if settings.BOOTED != 'task':

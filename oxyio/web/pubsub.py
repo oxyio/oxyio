@@ -33,7 +33,9 @@ def _get_pubsub_message():
 
 
 def _check_redis():
-    '''Custom listen loop so we can subscribe 'on-demand'.'''
+    '''
+    Custom listen loop so we can subscribe 'on-demand'.
+    '''
 
     while True:
         # Read messages until we have no more
@@ -44,7 +46,9 @@ def _check_redis():
 
 
 def consume_messages():
-    '''Start consuming messages from Redis.'''
+    '''
+    Start consuming messages from Redis.
+    '''
 
     global _pubsub
 
@@ -56,7 +60,9 @@ def consume_messages():
 
 
 def subscribe(callback, channel=None, pattern=None):
-    '''Subscribe to a channel and/or pattern, with a callback.'''
+    '''
+    Subscribe to a channel and/or pattern, with a callback.
+    '''
 
     if channel is not None:
         _channel_subscriptions.setdefault(channel, []).append(callback)
@@ -74,7 +80,9 @@ def subscribe(callback, channel=None, pattern=None):
 
 
 def unsubscribe(callback, channel=None, pattern=None):
-    '''Unsubscribe from a channel and/or pattern.'''
+    '''
+    Unsubscribe from a channel and/or pattern.
+    '''
 
     if channel is not None and callback in _channel_subscriptions.get(channel, []):
         _channel_subscriptions[channel].remove(callback)

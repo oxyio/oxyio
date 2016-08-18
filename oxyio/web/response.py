@@ -6,7 +6,9 @@ from flask import g, request, redirect, flash, jsonify, render_template
 
 
 def redirect_or_jsonify(url=None, **kwargs):
-    '''Redirect and pass messages or output JSON messages.'''
+    '''
+    Redirect and pass messages or output JSON messages.
+    '''
 
     if url is None:
         url = request.url
@@ -19,7 +21,9 @@ def redirect_or_jsonify(url=None, **kwargs):
 
 
 def render_or_jsonify(template, _template_data=None, **kwargs):
-    '''Render a HTML template or output JSON data.'''
+    '''
+    Render a HTML template or output JSON data.
+    '''
 
     if g.api:
         return jsonify(**kwargs)

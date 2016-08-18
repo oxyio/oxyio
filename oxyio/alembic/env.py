@@ -12,7 +12,9 @@ from flask import current_app
 
 
 def object_filter(module_name, obj, obj_name, type_, *args):
-    '''Filters Alembic migrations.'''
+    '''
+    Filters Alembic migrations.
+    '''
 
     table_name = obj_name
 

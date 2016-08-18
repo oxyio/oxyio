@@ -10,7 +10,9 @@ from .base import Base
 
 
 class Item(Base):
-    '''``Item``s are nested/owned by an ``Object``.'''
+    '''
+    ``Item``s are nested/owned by an ``Object``.
+    '''
 
     _oxyio_type = 'item'
 

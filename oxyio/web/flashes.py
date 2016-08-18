@@ -15,13 +15,17 @@ def flash_task_subscribe(task_id):
 
 
 def get_flashed_task_subscribes():
-    '''Get all the task subscribe requests.'''
+    '''
+    Get all the task subscribe requests.
+    '''
 
     return session.pop('task_subscribe_flashes', [])
 
 
 def get_flashed_request(name):
-    '''Get a flashed request.'''
+    '''
+    Get a flashed request.
+    '''
 
     return session.get('request_flashes', {}).pop(name, None)
 

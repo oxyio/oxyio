@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # oxy.io
-# File: boot.py
+# File: oxyio/boot.py
 # Desc: bootstraps & starts oxy.io servers/workers
 
 from os import path, environ

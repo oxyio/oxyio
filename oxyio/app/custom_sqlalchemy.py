@@ -13,7 +13,9 @@ from flask.ext.sqlalchemy import (
 
 class SQLAlchemy(OriginalSQLAlchemy):
     def make_declarative_base(self):
-        '''Creates oxyio's custom declarative base.'''
+        '''
+        Creates oxyio's custom declarative base.
+        '''
 
         # Unfortunately we have to nest this import as the file imports from oxyio.app,
         # which also imports this file.

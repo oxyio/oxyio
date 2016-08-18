@@ -24,7 +24,7 @@ install_requires = (
     'redis==2.10.3',
     'requests==2.7.0',
     'elasticsearch==2.2.0',
-    'elasticquery==2.3',
+    'elasticquery==3.dev0',
 
     # Hashing
     'bcrypt==1.0.2',
@@ -33,14 +33,16 @@ install_requires = (
     'coloredlogs==0.5',
 
     # CLI
-    'docopt'
+    'docopt',
 )
 
 
-# oxy.io Python, see MANIFEST.in for HTML/etc
+# oxy.io Python, see MANIFEST.in for templates/static
 packages = (
     'oxyio',
     'oxyio.app',
+    'oxyio.mappings',
+    'oxyio.migrations',
     'oxyio.models',
     'oxyio.scripts',
     'oxyio.settings',
@@ -49,24 +51,23 @@ packages = (
     'oxyio.web.templates',
     'oxyio.web.views',
     'oxyio.web.views.admin',
-    'oxyio.websockets'
+    'oxyio.websockets',
 )
 
 
 if __name__ == '__main__':
     setup(
-        name='oxy.io',
+        name='oxyio',
         version=0,
         author='Oxygem',
         author_email='hello@oxygem.com',
         url='',
         description='',
         packages=packages,
-        package_dir={'oxyio': 'oxyio'},
         install_requires=install_requires,
         scripts=(
             'bin/oxyio',
         ),
         license='MIT',
-        include_package_data=True
+        include_package_data=True,
     )

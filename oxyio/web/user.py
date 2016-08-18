@@ -20,7 +20,9 @@ def prepare_permissions_g():
 
 
 def get_current_user():
-    '''Get the current user object.'''
+    '''
+    Get the current user object.
+    '''
 
     if hasattr(g, 'user'):
         return g.user

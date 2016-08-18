@@ -86,7 +86,9 @@ def _module_data():
 
 
 def modules_nav():
-    '''Generate dropdown for modules changing the active/current one.'''
+    '''
+    Generate dropdown for modules changing the active/current one.
+    '''
 
     # Active module link
     add_dashboard = False
@@ -157,7 +159,9 @@ web_app.jinja_env.globals['modules_nav'] = modules_nav
 
 
 def module_nav():
-    '''Generate nav for current module (objects/etc).'''
+    '''
+    Generate nav for current module (objects/etc).
+    '''
 
     if not hasattr(g, 'module'):
         return ''
