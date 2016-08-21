@@ -1,6 +1,11 @@
 {% extends 'base_user.html' %}
 
 
+{% block title %}
+{% block admin_title %}{% endblock %}
+{% if self.admin_title() %}| {% endif %}Admin
+{% endblock %}
+
 {% block css %}
     {{ super() }}
     {{ webpack_css('admin') }}
@@ -22,7 +27,7 @@
 
     {% if has_permission('AdminUsers') %}
         <li{% if action == 'users' %} class="active"{% endif %}>
-            <a href="{{ url_for('admin_users') }}">Users/Groups</a>
+            <a href="{{ url_for('admin_users') }}">Users</a>
         </li>
     {% endif %}
 

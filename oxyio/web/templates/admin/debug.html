@@ -1,5 +1,9 @@
 {% extends 'admin/base.html' %}
 
+{% block admin_title %}
+Debug
+{% endblock %}
+
 {% block content %}
     <h2 class="top">Base Config</h2>
     <p>Static configurables, as defined in your settings file.</p>
@@ -9,7 +13,7 @@
             <th>Value</th>
         </tr></thead>
         <tbody>
-            {% for name, item in configs.iteritems() %}<tr>
+            {% for name, item in settings %}<tr>
                 <td>{{ name }}</td>
                 <td><pre><code>{{ item|pprint }}</code></pre></td>
             </tr>{% endfor %}

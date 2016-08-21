@@ -3,13 +3,13 @@
 {% block content %}
     <div class="block base">
         <form class="block third" method="post" action="{{ url_for('admin_edit_group', group_id=group.id) }}">
-            <h2>Editing group {{ group.name }}</h2>
+            <h2 class="top">Editing group {{ group.name }}</h2>
 
             <div><label for="name">Name</label>
             <input type="text" value="{{ group.name }}" id="name" name="name" /></div>
 
             <button class="button green">Update</button>
-            <small><a href="{{ url_for('admin_users') }}">back to users &amp; groups</a></small>
+            <small><a href="{{ url_for('admin_permissions') }}">back to permissions</a></small>
 
             {{ csrf_input() }}
 {% endblock %}
