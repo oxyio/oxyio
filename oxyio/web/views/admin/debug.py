@@ -32,6 +32,13 @@ def admin_debug():
         else:
             urls.append(url_meta)
 
+    # Load settings and sort alphabetically
+    sorted_settings = sorted((
+        (key, getattr(settings, key))
+        for key in dir(settings)
+        if(isinstance(key, str) and key.isupper())
+    ), key=lambda item: item[0])
+
     return render_or_jsonify('admin/debug.html',
         action='debug',
         modules=module_map,
@@ -41,11 +48,7 @@ def admin_debug():
         tasks=task_map,
         urls=sorted(urls, key=itemgetter(0)),
         api_urls=sorted(api_urls, key=itemgetter(0)),
-        configs={
-            key: getattr(settings, key)
-            for key in dir(settings)
-            if(isinstance(key, str) and key.isupper())
-        },
+        settings=sorted_settings,
         module_configs={
             name: {
                 key: getattr(module.config, key)
@@ -53,5 +56,5 @@ def admin_debug():
                 if(isinstance(key, str) and key.isupper())
             }
             for name, module in module_map.iteritems()
-        }
+        },
     )
