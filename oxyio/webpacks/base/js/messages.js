@@ -14,13 +14,10 @@ window.addEventListener('load', () => {
         if ($message.classList.contains('subscribe'))
             return;
 
-        // Remove messages in reverse (latest HTML div hides first)
-        const timeout = $messages.length - i;
-
         setTimeout(() => {
             Velocity($message, {marginTop: -36}, {duration: 100});
             setTimeout(() => $notifications.removeChild($message), 100);
-        }, timeout * 2000);
+        }, i * 2000);
 
         i++;
     });
