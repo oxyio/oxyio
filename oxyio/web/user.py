@@ -140,7 +140,7 @@ def has_own_objects_permission(module_name, objects_type, permission):
     Check permissions against all owned ``objects_type``.
     '''
 
-    return has_permission('{0}Own{1}{2}'.format(permission, module_name, objects_type))
+    return has_permission('{0}{1}{2}Own'.format(module_name, objects_type, permission))
 
 
 def has_any_objects_permission(module_name, objects_type, permission):
@@ -148,7 +148,7 @@ def has_any_objects_permission(module_name, objects_type, permission):
     Check permissions against all ``objects_type``.
     '''
 
-    return has_permission('{0}Any{1}{2}'.format(permission, module_name, objects_type))
+    return has_permission('{0}{1}{2}Any'.format(module_name, objects_type, permission))
 
 
 def has_global_objects_permission(module_name, objects_type, permission):
@@ -156,7 +156,7 @@ def has_global_objects_permission(module_name, objects_type, permission):
     Check permissions against global (unownable) ``objects_type``.
     '''
 
-    if has_permission('{0}{1}{2}'.format(permission, module_name, objects_type)):
+    if has_permission('{0}{1}{2}'.format(module_name, objects_type, permission)):
         return True
 
 

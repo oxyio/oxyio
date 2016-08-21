@@ -1,9 +1,13 @@
 {% extends 'admin/base.html' %}
 
+{% block admin_title %}
+Permissions
+{% endblock %}
+
 {% macro permission_items(group_id, permissions) %}
-    {% for permission in permissions %}
+    {% for permission, description in permissions %}
         <div class="checkbox">
-            <label for="group-{{ group_id }}-{{ permission }}">{{ permission }}</label>
+            <label for="group-{{ group_id }}-{{ permission }}">{{ description }}</label>
             <input
                 type="checkbox"
                 name="group-{{ group_id }}-{{ permission }}" id="group-{{ group_id }}-{{ permission }}"
@@ -14,35 +18,85 @@
 {% endmacro %}
 
 {% block content %}
-    <h2>
-        Group Permissions for:
-        <span class="buttonset" data-tab-group="permissions">{% for group in groups %}
-            <a class="button{% if loop.index == 1 %} active{% endif %}" data-tab-link="group-{{ group.id }}">{{ group.name }}</a>
-        {% endfor %}</span>
-    </h2>
+    <div class="block base">
+        <div class="block three-quarter">
+            <h2 class="top">
+                Group Permissions for:
+                <span class="buttonset" data-tab-group="permissions">{% for group in groups %}
+                    <a class="button{% if loop.index == 1 %} active{% endif %}" data-tab-link="group-{{ group.id }}">{{ group.name }}</a>
+                {% endfor %}</span>
+            </h2>
 
-    <form data-tabs="permissions" method="post">
-        {% for group in groups %}
-            <div data-tab="group-{{ group.id }}" class="block wide {% if loop.index != 1 %} hidden{% endif %}">
-                {% for category, items in permissions.iteritems() %}
-                    {% if items is mapping %}
-                        {% for object_name, items in items.iteritems() %}
-                            <div class="block auto">
-                                <h2>{{ object_name|title }} <small><a class="right" data-select-all>toggle all</a></small></h2>
-                                {{ permission_items(group.id, items) }}
+            <form data-tabs="permissions" id="permissions" method="post">
+                {% for group in groups %}
+                    <div data-tab="group-{{ group.id }}" class="block wide {% if loop.index != 1 %} hidden{% endif %}">
+                        {% for category, items in permissions.iteritems() %}
+                            <div class="block wide" data-permissions-block>
+                                <input
+                                    type="hidden"
+                                    id="group-{{ group.id }}-{{ category }}"
+                                    name="group-{{ group.id }}-{{ category }}"
+                                    {% if category|lower not in current_permissions[group.id] %}disabled{% endif %}
+                                />
+                                <h2>
+                                    {{ category }}
+                                    <div class="checkbox"><input
+                                        type="checkbox"
+                                        {% if category|lower in current_permissions[group.id] %}checked{% endif %}
+                                        disabled
+                                    /></div>
+                                    <small class="right">
+                                        <a data-enable-all>enable all</a> -
+                                        <a data-disable-all>disable all</a>
+                                    </small>
+                                </h2>
+                                <div data-permissions>
+                                    {{ permission_items(group.id, items) }}
+                                </div>
                             </div>
                         {% endfor %}
-                    {% else %}
-                        <div class="block auto">
-                            <h2>{{ category|title }} <small><a class="right" data-select-all>toggle all</a></small></h2>
-                            {{ permission_items(group.id, items) }}
-                        </div>
-                    {% endif %}
+                    </div>
                 {% endfor %}
-            </div>
-        {% endfor %}
 
-        <button class="button big green">Update Permissions</button>
-        {{ csrf_input() }}
-    </form>
+                <button class="button big green">Update Permissions</button>
+                {{ csrf_input() }}
+            </form>
+        </div>
+
+        <div class="block quarter">
+            <h3>Add Group</h3>
+            <form class="inline" action="{{ url_for('admin_add_group') }}" method="post">
+                <div><input type="text" name="name" id="name" placeholder="New group name..." /></div>
+                <button class="button green small">Add Group</button>
+                {{ csrf_input() }}
+            </form>
+
+            <h2>User Groups</h2>
+            <table class="object-based">
+                <thead><tr>
+                    <th width="50px">ID</th>
+                    <th>Name</th>
+                    <th></th>
+                </tr></thead>
+                <tbody>
+                    {% for group in groups %}<tr>
+                        <td>{{ group.id }}</td>
+                        <td>{{ group.name }}</td>
+                        <td class="buttonset align-right">
+                            <a class="button small blue" href="{{ url_for('admin_view_edit_group', group_id=group.id) }}">Edit</a>
+                            <form action="{{
+                                url_for(
+                                    'admin_delete_group',
+                                    group_id=group.id,
+                                )
+                            }}" method="POST" class="inline">
+                                {{ csrf_input() }}
+                                <button class="button red small">Delete</button>
+                            </form>
+                        </td>
+                    </tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

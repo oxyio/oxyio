@@ -19,14 +19,6 @@ def _get_user_or_404(user_id):
     return user
 
 
-def _get_group_or_404(group_id):
-    group = UserGroup.query.get(group_id)
-    if not group:
-        abort(404)
-
-    return group
-
-
 @web_app.route('/admin/users', methods=['GET'])
 @permissions_required('Admin', 'AdminUsers')
 def admin_users():
@@ -34,17 +26,24 @@ def admin_users():
     users = User.query
     groups = UserGroup.query.all()
 
+    filtered = False
+
     if 'user_group_id' in request.args and len(request.args['user_group_id']) > 0:
         users = users.filter(User.user_group_id == request.args['user_group_id'])
+        filtered = True
 
     if 'name' in request.args and len(request.args['name']) > 0:
         users = users.filter(User.name.like('%{0}%'.format(request.args['name'])))
+        filtered = True
 
-    return render_or_jsonify('admin/users.html',
+    return render_or_jsonify(
+        'admin/users.html',
         action='users',
         users=users.all(),
-        groups=groups
+        groups=groups,
+        filtered=filtered,
     )
+
 
 @web_app.route('/admin/users/<int:user_id>/edit', methods=['GET'])
 @permissions_required('Admin', 'AdminUsers')
@@ -53,11 +52,13 @@ def admin_view_edit_user(user_id):
     user = _get_user_or_404(user_id)
     groups = UserGroup.query.all()
 
-    return render_or_jsonify('admin/user.html',
+    return render_or_jsonify(
+        'admin/user.html',
         action='users',
         user=user,
-        groups=groups
+        groups=groups,
     )
+
 
 @web_app.route('/admin/users/<int:user_id>/edit', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
@@ -86,7 +87,9 @@ def admin_edit_user(user_id):
 
     db.session.add(user)
     db.session.commit()
+
     return redirect_or_jsonify(success='User updated')
+
 
 @web_app.route('/admin/users', methods=['POST'])
 @permissions_required('Admin', 'AdminUsers')
@@ -101,7 +104,7 @@ def admin_add_user():
 
     return redirect_or_jsonify(
         url_for('admin_edit_user', user_id=user.id),
-        success='User added'
+        success='User added',
     )
 
 
@@ -112,66 +115,8 @@ def admin_delete_user(user_id):
 
     db.session.delete(user)
     db.session.commit()
-    return redirect_or_jsonify(
-        url_for('admin_users'),
-        success='User deleted'
-    )
-
-
-@web_app.route('/admin/groups', methods=['POST'])
-@permissions_required('Admin', 'AdminUsers')
-def admin_add_group():
-    name = request.form['name']
-    if len(name) == 0:
-        return redirect_or_jsonify(url_for('admin_users'), error='Invalid name')
-
-    group = UserGroup(name)
-    db.session.add(group)
-    db.session.commit()
 
     return redirect_or_jsonify(
         url_for('admin_users'),
-        success='Group added'
-    )
-
-
-@web_app.route('/admin/groups/<int:group_id>/edit', methods=['GET'])
-@permissions_required('Admin', 'AdminUsers')
-def admin_view_edit_group(group_id):
-    g.module = 'admin'
-    group = _get_group_or_404(group_id)
-
-    return render_or_jsonify('admin/group.html',
-        action='users',
-        group=group
-    )
-
-
-@web_app.route('/admin/groups/<int:group_id>/edit', methods=['POST'])
-@permissions_required('Admin', 'AdminUsers')
-def admin_edit_group(group_id):
-    name = request.form['name']
-    if len(name) == 0:
-        return redirect_or_jsonify(error='Invalid name')
-
-    group = _get_group_or_404(group_id)
-    group.name = name
-
-    db.session.add(group)
-    db.session.commit()
-    return redirect_or_jsonify(success='Group updated')
-
-
-@web_app.route('/admin/groups/<int:user_group_id>/delete', methods=['POST'])
-@permissions_required('Admin', 'AdminUsers')
-def admin_delete_user_group(user_group_id):
-    group = UserGroup.query.get(user_group_id)
-    if not group:
-        abort(404)
-
-    db.session.delete(group)
-    db.session.commit()
-    redirect_or_jsonify(
-        url_for('admin_user'),
-        success='Group deleted'
+        success='User deleted',
     )

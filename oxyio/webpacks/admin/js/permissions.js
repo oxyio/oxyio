@@ -1,33 +1,50 @@
-'use strict';
+// oxy.io
+// File: oxyio/webpacks/admin/js/permissions.js
+// Desc: handles the permission tabs
 
-var _ = require('lodash');
+import _ from 'lodash';
 
-var selectAlls = document.querySelectorAll('[data-select-all]');
 
-_.each(selectAlls, function(selectAll) {
-    // Selected is a flag of state (only true/other really matters)
-    var selected = null,
-        // Go up from div->h2->small->a[data-select-all] back to the div, get it's checkboxes
-        checkboxes = selectAll.parentNode.parentNode.parentNode.querySelectorAll('input[type=checkbox]');
+const $permissionTabs = document.querySelectorAll('[data-permissions-block]');
 
-    selectAll.addEventListener('click', function() {
-        // If we know all selected, deselect all
-        if(selected === true) {
-            _.each(checkboxes, function(checkbox) {
-                checkbox.checked = false;
-            });
-            selected = false;
+_.each($permissionTabs, ($tab) => {
+    const $hiddenInput = $tab.querySelector('input[type=hidden]');
+    const $mainCheckbox = $tab.querySelector('h2 input');
+    const $checkboxes = $tab.querySelectorAll('[data-permissions] input');
+
+    // Ensure the main check box (disabled for users) is updated inline w/sub-checkboxes
+    const ensureMainCheckbox = () => {
+        // If every checkbox is unchecked
+        if (_.every($checkboxes, ($checkbox) => !$checkbox.checked)) {
+            $mainCheckbox.checked = false;
+            $hiddenInput.disabled = true;
         } else {
-            _.each(checkboxes, function(checkbox) {
-                checkbox.checked = true;
-            });
-            selected = true;
+            $mainCheckbox.checked = true;
+            $hiddenInput.disabled = false;
         }
+    };
+
+    // Check on every change
+    _.each($checkboxes, ($checkbox) => {
+        $checkbox.addEventListener('change', () => {
+            ensureMainCheckbox();
+        });
     });
 
-    _.each(checkboxes, function(checkbox) {
-        checkbox.addEventListener('change', function() {
-            selected = null;
+    // Bind up enable/disable all buttons
+    const $enableButton = $tab.querySelector('[data-enable-all]');
+    $enableButton.addEventListener('click', () => {
+        _.each($checkboxes, ($checkbox) => {
+            $checkbox.checked = true;
         });
+        ensureMainCheckbox();
+    });
+
+    const $disableButton = $tab.querySelector('[data-disable-all]');
+    $disableButton.addEventListener('click', () => {
+        _.each($checkboxes, ($checkbox) => {
+            $checkbox.checked = false;
+        });
+        ensureMainCheckbox();
     });
 });

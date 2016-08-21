@@ -44,6 +44,11 @@ form {
         &:hover, &[type=text]:focus {
             background: @inputHover;
         }
+
+        &:disabled {
+            color: @darkestGrey;
+            background: @grey;
+        }
     }
 
     select {
@@ -80,6 +85,10 @@ form {
             &:checked:before {
                 content: '\f00c';
                 margin-left: -6px;
+            }
+
+            &:disabled {
+                cursor: default;
             }
         }
 
