@@ -21,7 +21,7 @@
                 <button type="submit" class="button green">
                     <span class="icon icon-sign-in"></span> Login
                 </button>
-                <small><a href="{{ url_for('resetpw') }}">reset password</a></small>
+                <small><a href="{{ url_for('view_reset_password') }}">reset password</a></small>
 
                 {% if request.args.referrer %}
                     <input type="hidden" name="referrer" value="{{ request.args.referrer }}" />

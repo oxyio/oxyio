@@ -243,7 +243,7 @@ def create_object_views(app, api_app, cls):
         html_api_route(
             '/{0}/<int:object_id>/{1}'.format(cls.OBJECT, name),
             methods=methods,
-            endpoint='{0}_{1}'.format(cls.OBJECT, name),
+            endpoint=view_func.__name__,
             app=app, api_app=api_app,
         )(login_required(
             # Pass view_func as an arg to avoid loop overridding it

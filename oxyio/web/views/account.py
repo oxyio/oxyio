@@ -71,12 +71,13 @@ def login():
     return redirect(request.form.get('referrer', '/'))
 
 
-@web_app.route('/resetpw', methods=['GET'])
-def view_resetpw():
+@web_app.route('/reset-password', methods=['GET'])
+def view_reset_password():
     return render_template('resetpw.html')
 
-@web_app.route('/resetpw', methods=['POST'])
-def resetpw():
+
+@web_app.route('/reset-password', methods=['POST'])
+def reset_password():
     return redirect_or_jsonify(success='A reset email has been sent if this email exists')
     # Set key & time
     # Email user
@@ -86,6 +87,7 @@ def resetpw():
 @login_required
 def view_profile():
     return render_template('profile.html')
+
 
 @web_app.route('/profile', methods=['POST'])
 @login_required
