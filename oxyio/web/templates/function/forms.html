@@ -8,6 +8,7 @@
     {%- endif -%}
 {% endmacro %}
 
+
 {% macro format_value(value, options) %}
     {%- if options.formatter -%}
         {{ options.formatter.format(value) }}
@@ -15,6 +16,7 @@
         {{ value }}
     {%- endif -%}
 {% endmacro %}
+
 
 {% macro label(field, options) %}
     <label for="{{ field }}">
@@ -24,6 +26,7 @@
 {% endmacro %}
 
 
+
 <!-- Field types -->
 
 <!-- string -> input -->
@@ -31,14 +34,17 @@
     {% if not inline %}
         {{ label(field, options) }}
     {% endif %}
+
     <input type="text" id="{{ field }}" name="{{ field }}" value="{{ format_value(value, options) }}" {% if inline %}placeholder="Filter by {{ format_title(field, options, inline=inline) }}..."{% endif %} />
 {% endmacro %}
+
 
 <!-- enum -> select -->
 {% macro enum(field, enums, value, options, inline) %}
     {% if not inline %}
         {{ label(field, options) }}
     {% endif %}
+
     <div class="select">
         <select id="{{ field }}" name="{{ field }}">
             {% if inline %}
@@ -52,23 +58,35 @@
     </div>
 {% endmacro %}
 
+
 <!-- relation -> select -->
 {% macro relation(field, objects, value, options, inline) %}
-    {{ label(prettify_relation(field), options) }}
+    {% if not inline %}
+        {{ label(prettify_relation(field), options) }}
+    {% endif %}
+
     <div class="select {% if options.editable == False %}disabled{% endif %}">
         <select {% if options.editable == False %}disabled{% endif %} id="{{ field }}" name="{{ field }}">
-            <option value="0">&mdash;</option>
+            {% if inline %}
+                <option value="">Filter by {{ format_title(field, options, inline=True) }}</option>
+            {% else %}
+                <option value="0">&mdash;</option>
+            {% endif %}
             {% for obj in objects %}
-                <option value="{{ obj.id }}"{% if value == obj.id %} selected{% endif %}>{{ obj.name }}</option>
+                <option value="{{ obj.id }}"{% if value and value|int == obj.id %} selected{% endif %}>{{ obj.name }}</option>
             {% endfor %}
         </select>
         <span class="icon icon-arrow-down"></span>
     </div>
 {% endmacro %}
 
+
 <!-- multi relation -> multi select -->
 {% macro mrelation(field, objects, value, options, inline) %}
-    {{ label(prettify_relation(field), options) }}
+    {% if not inline %}
+        {{ label(prettify_relation(field), options) }}
+    {% endif %}
+
     <div class="select multi multiselect {% if options.editable == False %}disabled{% endif %}">
         <select {% if options.editable == False %}disabled{% endif %} multiple id="{{ field }}" name="{{ field }}">
             {% for obj in objects %}
@@ -79,8 +97,8 @@
 {% endmacro %}
 
 
-<!-- Convert forms into lists of fields -->
 
+<!-- Convert forms into lists of fields -->
 {% macro fields(form_data, object={}, inline=False) %}
     {% for (type, field, args, options) in form_data %}
         <div>
