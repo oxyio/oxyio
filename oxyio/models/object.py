@@ -195,11 +195,58 @@ class Object(Base):
         '''
 
         form = []
+
         for field, options in fields:
             string_type, _, arg = self._col_to_data(field, options)
             form.append((string_type, field, arg, options))
 
         return form
+
+    @server_only
+    def _do_form_relation(self, field_type, module_name, objects_type, field_name, options):
+        '''
+        Check we have permission to edit the target relation or m(ulti)relation append in
+        similar format to _config_to_form
+        '''
+
+        object_class = get_object_class(module_name, objects_type)
+
+        # Do we have edit permissions on this type of object
+        if object_class.OWNABLE:
+            # Edit any object
+            if has_any_objects_permission(module_name, objects_type, 'edit'):
+                objects = get_objects(module_name, objects_type)
+
+            # Edit just our own objcts
+            elif has_own_objects_permission(module_name, objects_type, 'edit'):
+                objects = get_own_objects(module_name, objects_type)
+
+        # Non-owned object, check global permission
+        elif has_global_objects_permission(module_name, objects_type, 'edit'):
+            objects = get_objects(module_name, objects_type)
+
+        # The current user does not have permission to edit either their own or all
+        # related objects, so we don't add this field to the form at all.
+        else:
+            objects = (
+                [getattr(self, field_name)]
+                if field_type == 'relation'
+                else getattr(self, field_name)
+            )
+            options['editable'] = False
+
+        field_id_name = (
+            '{0}_id'.format(field_name)
+            if field_type == 'relation'
+            else '{0}_ids'.format(field_name)
+        )
+
+        return (
+            field_type,
+            field_id_name,
+            objects,
+            options,
+        )
 
     # Public Helpers
     #
@@ -238,7 +285,24 @@ class Object(Base):
         Builds the objects filter/search form for macro in ``function/forms.html``.
         '''
 
-        form = self._config_to_form(self.FILTER_FIELDS)
+        form = self._config_to_form([('name', {})] + list(self.FILTER_FIELDS))
+
+        for field, module_name, object_type, options in iter_relations(
+            self.FILTER_RELATIONS
+        ):
+            form.append(self._do_form_relation(
+                'relation', module_name, object_type,
+                field, options,
+            ))
+
+        for field, module_name, objects_type, options in iter_relations(
+            self.FILTER_MRELATIONS
+        ):
+            form.append(self._do_form_relation(
+                'relation', module_name, objects_type,
+                field, options,
+            ))
+
         return form
 
     @server_only
@@ -250,65 +314,25 @@ class Object(Base):
         # Normal edit fields + name
         form = self._config_to_form([('name', {})] + list(self.EDIT_FIELDS))
 
-        # Check we have permission to edit the target relation or m(ulti)relation
-        # append in similar format to _config_to_form
-        def _do_relation(field_type, module_name, objects_type, field_name, options):
-            object_class = get_object_class(module_name, objects_type)
-
-            # Do we have edit permissions on this type of object
-            if object_class.OWNABLE:
-                # Edit any object
-                if has_any_objects_permission(module_name, objects_type, 'edit'):
-                    objects = get_objects(module_name, objects_type)
-
-                # Edit just our own objcts
-                elif has_own_objects_permission(module_name, objects_type, 'edit'):
-                    objects = get_own_objects(module_name, objects_type)
-
-            # Non-owned object, check global permission
-            elif has_global_objects_permission(module_name, objects_type, 'edit'):
-                objects = get_objects(module_name, objects_type)
-
-            # The current user does not have permission to edit either their own or all
-            # related objects, so we don't add this field to the form at all.
-            else:
-                objects = (
-                    [getattr(self, field_name)]
-                    if field_type == 'relation'
-                    else getattr(self, field_name)
-                )
-                options['editable'] = False
-
-            field_id_name = (
-                '{0}_id'.format(field_name)
-                if field_type == 'relation'
-                else '{0}_ids'.format(field_name)
-            )
-
-            form.append((
-                field_type,
-                field_id_name,
-                objects,
-                options,
-            ))
-
         # Related objects
         for field, module_name, object_type, options in iter_relations(
             self.EDIT_RELATIONS
         ):
-            _do_relation(
+            form.append(self._do_form_relation(
                 'relation', module_name, object_type,
                 field, options,
-            )
+            ))
 
         # Many/Multi-related objects
         for field, module_name, objects_type, options in iter_relations(
             self.EDIT_MRELATIONS
         ):
             options['related_ids'] = [obj.id for obj in getattr(self, field)]
-            _do_relation('mrelation', module_name, objects_type, field, options)
+            form.append(self._do_form_relation(
+                'mrelation', module_name, objects_type,
+                field, options
+            ))
 
-        print('FORM', form)
         return form
 
     # Editing
