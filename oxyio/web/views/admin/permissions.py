@@ -29,6 +29,7 @@ def admin_permissions():
             ('AdminSettings', 'Edit settings'),
             ('AdminUsers', 'Add/modify users'),
             ('AdminPermissions', 'Edit permissions & groups'),
+            ('AdminTasks', 'View current tasks'),
             ('AdminLogs', 'View logs'),
             ('AdminDebug', 'View debug'),
         ],
