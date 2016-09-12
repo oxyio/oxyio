@@ -144,7 +144,7 @@ def run_web():
         **{
             # Make uWSGI fail if it can't load the app
             'need-app': True,
-            'lazy-apps': True
+            'lazy-apps': True,
         }
     )
 
