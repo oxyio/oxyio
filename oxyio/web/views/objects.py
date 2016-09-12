@@ -6,8 +6,7 @@ from flask import abort, request, g
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import joinedload
 
-from oxyio.data import get_object_class_or_404, get_object_class, get_objects
-from oxyio.models.object import iter_relations
+from oxyio.data import get_object_class_or_404, get_objects, get_object
 
 from oxyio.web.route import html_api_route
 from oxyio.web.request import in_request_args, get_request_data
@@ -22,22 +21,18 @@ from oxyio.web.user import (
 
 def _filter_field(objects, obj, field, value):
     # Multiple values, do an IN query
-    if ',' in request.args[field]:
-        values = request.args[field].split(',')
-        objects = objects.filter(getattr(obj, field).in_(values))
+    if isinstance(value, list):
+        objects = objects.filter(getattr(obj, field).in_(value))
 
     # Single value, simple filter
     else:
-        objects = objects.filter_by(**{field: request.args[field]})
+        objects = objects.filter(getattr(obj, field) == value)
 
     return objects
 
 
-def _do_list_relations(relations):
-    return [
-        (field, module, object_type, get_object_class(module, object_type))
-        for field, module, object_type, _ in iter_relations(relations)
-    ]
+def _contains_field(objects, obj, field, value):
+    return objects.filter(getattr(obj, field).contains(value))
 
 
 def _do_list_objects(module_name, objects_type, get_objects_func, is_all=False):
@@ -60,24 +55,46 @@ def _do_list_objects(module_name, objects_type, get_objects_func, is_all=False):
     ])
 
     # Join-load any list fields which ask for it
-    for (field, options) in object_class.LIST_FIELDS:
+    for field, options in object_class.LIST_FIELDS:
         if options.get('join'):
             objects = objects.options(joinedload(field))
 
     # Apply any filters
     filtered = False
 
-    for (field, _) in object_class.FILTER_FIELDS:
-        if in_request_args(field):
-            filtered = True
-            objects = _filter_field(objects, object_class, field, request.args[field])
-
     # Name filter
-    if 'name' in request.args and len(request.args['name']) > 0:
+    if in_request_args('name'):
         filtered = True
         objects = objects.filter(
             object_class.name.like('%{0}%'.format(request.args['name']))
         )
+
+    # Field filters
+    for field, _ in object_class.FILTER_FIELDS:
+        if in_request_args(field):
+            filtered = True
+            objects = _filter_field(
+                objects, object_class, field,
+                request.args[field],
+            )
+
+    # Relation filters
+    for field, (module_name, objects_type), options in object_class.FILTER_RELATIONS:
+        if in_request_args(field):
+            filtered = True
+            objects = _filter_field(
+                objects, object_class, field,
+                get_object(module_name, objects_type, request.args[field]),
+            )
+
+    # Multi relation filters
+    for field, (module_name, objects_type), options in object_class.FILTER_MRELATIONS:
+        if in_request_args(field):
+            filtered = True
+            objects = _contains_field(
+                objects, object_class, field,
+                get_object(module_name, objects_type, request.args[field]),
+            )
 
     # Fetch the objects
     objects = list(objects)
@@ -87,9 +104,6 @@ def _do_list_objects(module_name, objects_type, get_objects_func, is_all=False):
 
     return render_or_jsonify('objects/list.html', {
         'object_class': object_class,
-        'list_fields': object_class.LIST_FIELDS,
-        'list_relations': _do_list_relations(object_class.LIST_RELATIONS),
-        'list_mrelations': _do_list_relations(object_class.LIST_MRELATIONS),
         'filter_form': filter_form,
         'filtered': filtered,
         'action': 'all' if is_all else 'own',

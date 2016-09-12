@@ -55,19 +55,11 @@ def _column_to_python(column):
         logger.warning('unknown column type: {0}'.format(type(column)))
 
 
-def iter_relations(relations):
-    for attribute, module_type, options in relations:
-        module, object_type = module_type.split('/')
-        yield (attribute, module, object_type, options)
-
-
 class Object(Base):
     _oxyio_type = 'object'
 
     # Config
     #
-
-    NAME = TITLE = TITLES = None
 
     # Whether this object can be owned by users
     OWNABLE = False
@@ -75,27 +67,28 @@ class Object(Base):
     # Whether this object can be added manually
     ADDABLE = True
 
-    # List of ES mappings for this object
-    ES_DOCUMENTS = None
-
-    # Routes for this object - list of (route, method, view_func, permission)
-    ROUTES = None
-
     @classmethod
     def _configure(cls):
         '''
         Provide defaults for the object config.
         '''
 
+        # Ensure we have at least NAME & TITLE
+        if not hasattr(cls, 'NAME') or not hasattr(cls, 'TITLE'):
+            raise cls.ObjectError('Bad object: I have no NAME or TITLE!')
+
         # Plural title default = title+s
-        if cls.TITLES is None:
+        if not hasattr(cls, 'TITLES'):
             cls.TITLES = '{0}s'.format(cls.TITLE)
 
-        if cls.ES_DOCUMENTS is None:
+        if not hasattr(cls, 'ES_DOCUMENTS'):
             cls.ES_DOCUMENTS = ()
 
-        if cls.ROUTES is None:
+        if not hasattr(cls, 'ROUTES'):
             cls.ROUTES = ()
+
+        if not hasattr(cls, 'ORDER_FIELDS'):
+            cls.ORDER_FIELDS = ('id', 'name')
 
         # Generate EDIT_FIELDS, ..., LIST_MRELATIONS in order, such that the first three
         # are FIELDS, then RELATIONS, MRELATIONS and such that the methods "cascade"
@@ -105,7 +98,7 @@ class Object(Base):
             for group, method
             in product(
                 ('FIELDS', 'RELATIONS', 'MRELATIONS'),
-                ('EDIT', 'FILTER', 'LIST')
+                ('EDIT', 'FILTER', 'LIST'),
             )
         ]
 
@@ -206,7 +199,7 @@ class Object(Base):
     def _do_form_relation(self, field_type, module_name, objects_type, field_name, options):
         '''
         Check we have permission to edit the target relation or m(ulti)relation append in
-        similar format to _config_to_form
+        similar format to _config_to_form.
         '''
 
         object_class = get_object_class(module_name, objects_type)
@@ -235,15 +228,9 @@ class Object(Base):
             )
             options['editable'] = False
 
-        field_id_name = (
-            '{0}_id'.format(field_name)
-            if field_type == 'relation'
-            else '{0}_ids'.format(field_name)
-        )
-
         return (
             field_type,
-            field_id_name,
+            field_name,
             objects,
             options,
         )
@@ -254,7 +241,7 @@ class Object(Base):
     def url(self, url_string):
         return url_for(
             '{0}.{1}_{2}'.format(self.MODULE, url_string, self.OBJECT),
-            object_id=self.id
+            object_id=self.id,
         )
 
     @property
@@ -287,17 +274,13 @@ class Object(Base):
 
         form = self._config_to_form([('name', {})] + list(self.FILTER_FIELDS))
 
-        for field, module_name, object_type, options in iter_relations(
-            self.FILTER_RELATIONS
-        ):
+        for field, (module_name, object_type), options in self.FILTER_RELATIONS:
             form.append(self._do_form_relation(
                 'relation', module_name, object_type,
                 field, options,
             ))
 
-        for field, module_name, objects_type, options in iter_relations(
-            self.FILTER_MRELATIONS
-        ):
+        for field, (module_name, objects_type), options in self.FILTER_MRELATIONS:
             form.append(self._do_form_relation(
                 'relation', module_name, objects_type,
                 field, options,
@@ -315,22 +298,18 @@ class Object(Base):
         form = self._config_to_form([('name', {})] + list(self.EDIT_FIELDS))
 
         # Related objects
-        for field, module_name, object_type, options in iter_relations(
-            self.EDIT_RELATIONS
-        ):
+        for field, (module_name, object_type), options in self.EDIT_RELATIONS:
             form.append(self._do_form_relation(
                 'relation', module_name, object_type,
                 field, options,
             ))
 
         # Many/Multi-related objects
-        for field, module_name, objects_type, options in iter_relations(
-            self.EDIT_MRELATIONS
-        ):
+        for field, (module_name, objects_type), options in self.EDIT_MRELATIONS:
             options['related_ids'] = [obj.id for obj in getattr(self, field)]
             form.append(self._do_form_relation(
                 'mrelation', module_name, objects_type,
-                field, options
+                field, options,
             ))
 
         return form
@@ -405,11 +384,8 @@ class Object(Base):
             setattr(self, field, data)
 
         # Ensure related items exist
-        for field, module_name, object_type, options in iter_relations(
-            self.EDIT_RELATIONS
-        ):
-            field_name = '{0}_id'.format(field)
-            object_id = request_data.get(field_name)
+        for field, (module_name, object_type), options in self.EDIT_RELATIONS:
+            object_id = request_data.get(field)
 
             # Skip if not provided (partial update)
             if object_id is None:
@@ -432,19 +408,17 @@ class Object(Base):
             ):
                 raise self.EditRequestError(
                     'You do not have permission to set {0} => {1} #{2}'.format(
-                        field_name, object_type, object_id
+                        field, object_type, object_id
                     )
                 )
 
             # Set the object
-            setattr(self, field_name, object_id)
+            new_object = get_object(module_name, object_type, object_id)
+            setattr(self, field, new_object)
 
         # Ensure mrelated items exist
-        for field, module_name, objects_type, options in iter_relations(
-            self.EDIT_MRELATIONS
-        ):
-            field_name = '{0}_ids'.format(field)
-            object_ids = request_data.get(field_name)
+        for field, (module_name, objects_type), options in self.EDIT_MRELATIONS:
+            object_ids = request_data.get(field)
 
             # Skip if not provided (partial update)
             if object_ids is None:

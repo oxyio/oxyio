@@ -68,12 +68,12 @@
     <div class="select {% if options.editable == False %}disabled{% endif %}">
         <select {% if options.editable == False %}disabled{% endif %} id="{{ field }}" name="{{ field }}">
             {% if inline %}
-                <option value="">Filter by {{ format_title(field, options, inline=True) }}</option>
+                <option value="">Filter by {{ format_title(prettify_relation(field), options, inline=True) }}</option>
             {% else %}
                 <option value="0">&mdash;</option>
             {% endif %}
             {% for obj in objects %}
-                <option value="{{ obj.id }}"{% if value and value|int == obj.id %} selected{% endif %}>{{ obj.name }}</option>
+                <option value="{{ obj.id }}"{% if value and (value == obj or value|int == obj.id) %} selected{% endif %}>{{ obj.name }}</option>
             {% endfor %}
         </select>
         <span class="icon icon-arrow-down"></span>

@@ -9,15 +9,20 @@ from oxyio import settings
 from oxyio.app import web_app, module_map, object_map
 
 
-# Attach the get_flashed_request & get_flashed_task_subscribes function
-from oxyio.web.flashes import get_flashed_request, get_flashed_task_subscribes
-web_app.jinja_env.globals['get_flashed_request'] = get_flashed_request
-web_app.jinja_env.globals['get_flashed_task_subscribes'] = get_flashed_task_subscribes
+# Attach data accessors
+from oxyio.data import get_object_class
+web_app.jinja_env.globals['get_object_class'] = get_object_class
 
 
 # Attach the has_module function
 from oxyio.app.module_loader import has_module
 web_app.jinja_env.globals['has_module'] = has_module
+
+
+# Attach the get_flashed_request & get_flashed_task_subscribes function
+from oxyio.web.flashes import get_flashed_request, get_flashed_task_subscribes
+web_app.jinja_env.globals['get_flashed_request'] = get_flashed_request
+web_app.jinja_env.globals['get_flashed_task_subscribes'] = get_flashed_task_subscribes
 
 
 # Attach the user functions to our global jinja env
@@ -41,10 +46,8 @@ web_app.jinja_env.globals['has_global_objects_permission'] = has_global_objects_
 # Helper for checking for list
 web_app.jinja_env.globals['is_list'] = lambda arg: isinstance(arg, list)
 
-
 # Make settings accessible within templates
 web_app.jinja_env.globals['get_settings'] = lambda: settings
-
 
 # Helper for making relations pretty
 web_app.jinja_env.globals['prettify_relation'] = lambda field: (

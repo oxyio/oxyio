@@ -7,20 +7,12 @@
         <h1>{% if action == 'all' %}All {% endif %}{{ object_class.TITLES }}</h1>
 
         <form class="inline">
-            <div>
-                <input
-                    type="text" name="name"
-                    placeholder="Filter by name..."
-                    value="{{ request.args.name }}"
-                />
-            </div>
-
             {{ forms.fields(filter_form, object=request.args, inline=True) }}
 
             <div class="{% if filtered %}buttonset{% endif %}">
                 <button type="submit" class="button blue small">Filter</button>
                 {% if filtered %}
-                    <a class="button red small">Clear</a>
+                    <a class="button red small" href="{{ request.path }}">Clear</a>
                 {% endif %}
             </div>
         </form>
@@ -55,15 +47,15 @@
                 <th width="15%">User</th>
             {% endif %}
 
-            {% for (field, options) in list_fields %}
+            {% for field, options in object_class.LIST_FIELDS %}
                 <th>{{ forms.format_title(field, options) }}</th>
             {% endfor %}
 
-            {% for field, _, _, options in list_relations %}
+            {% for field, _, options in object_class.LIST_RELATIONS %}
                 <th>{{ forms.format_title(prettify_relation(field), options) }}</th>
             {% endfor %}
 
-            {% for field, _, _, options in list_mrelations %}
+            {% for field, _, options in object_class.LIST_MRELATIONS %}
                 <th>{{ forms.format_title(field, options) }}</th>
             {% endfor %}
 
@@ -83,7 +75,7 @@
                     {% endif %}</td>
                 {% endif %}
 
-                {% for field, options in list_fields %}
+                {% for field, options in object_class.LIST_FIELDS %}
                     <td>{% if object[field] %}
                         {% if options.enums %}
                             {{ options.enums[object[field]] }}
@@ -95,12 +87,13 @@
                     {% else %}&mdash;{% endif %}</td>
                 {% endfor %}
 
-                {% for field, module, type, object_class in list_relations %}
+                {% for field, (module, type), options in object_class.LIST_RELATIONS %}
+                    {% set obj_class = get_object_class(module, type) %}
                     <td>
                         {% if object[field] %}
                             {%
                                 if (
-                                    object_class.OWNABLE
+                                    obj_class.OWNABLE
                                     and (
                                         has_any_objects_permission(module, type, 'view')
                                         or (
@@ -118,12 +111,13 @@
                     </td>
                 {% endfor %}
 
-                {% for field, module, type, object_class in list_mrelations %}
+                {% for field, (module, type), options in object_class.LIST_MRELATIONS %}
+                    {% set obj_class = get_object_class(module, type) %}
                     <td>
                         {% if object[field] %}
                             {%
                                 if (
-                                    object_class.OWNABLE
+                                    obj_class.OWNABLE
                                     and (
                                         has_any_objects_permission(module, type, 'view')
                                         or (
