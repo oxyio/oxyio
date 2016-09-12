@@ -4,6 +4,7 @@
 
 from flask import abort, request, g
 from jinja2 import TemplateNotFound
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import joinedload
 
 from oxyio.data import get_object_class_or_404, get_objects, get_object
@@ -95,6 +96,22 @@ def _do_list_objects(module_name, objects_type, get_objects_func, is_all=False):
                 objects, object_class, field,
                 get_object(module_name, objects_type, request.args[field]),
             )
+
+    # Ordering
+    order_func = (
+        asc
+        if in_request_args('order') and request.args['order'] == 'asc'
+        else desc
+    )
+
+    order_field = object_class.id
+    if in_request_args('order_by') and (
+        request.args['order_by'] == 'name'
+        or request.args['order_by'] in object_class.ORDER_FIELDS
+    ):
+        order_field = getattr(object_class, request.args['order_by'])
+
+    objects = objects.order_by(order_func(order_field))
 
     # Fetch the objects
     objects = list(objects)
