@@ -117,7 +117,7 @@ def has_object_permission(module_name, object_type, object_id, permission):
         # Get object, check user_id or group_id
         user = get_current_user()
         obj = get_object(module_name, object_type, object_id)
-        if obj and obj.user_id == user.id or obj.user_group_id == user.user_group_id:
+        if obj and obj.user_id == user.id:
             return True
 
     # Basic, un-ownable object permissions
